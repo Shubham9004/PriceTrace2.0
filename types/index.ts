@@ -4,6 +4,7 @@ export type PriceHistoryItem = {
 
 export type User = {
   email: string;
+  targetPrice?: number; // Optional target price for the user
 };
 
 export type Product = {
@@ -24,14 +25,15 @@ export type Product = {
   reviewsCount: number;
   stars: number;
   isOutOfStock: Boolean;
-  users?: User[];
+  users?: User[]; // Array of users who are tracking this product, with optional target prices
 };
 
 export type NotificationType =
   | "WELCOME"
   | "CHANGE_OF_STOCK"
   | "LOWEST_PRICE"
-  | "THRESHOLD_MET";
+  | "THRESHOLD_MET"
+  | "TARGET_PRICE_MET"; // New notification type for target price met
 
 export type EmailContent = {
   subject: string;
@@ -41,4 +43,6 @@ export type EmailContent = {
 export type EmailProductInfo = {
   title: string;
   url: string;
-};
+  currentPrice: number; // Add currentPrice here
+  image?: string; // Optional field, you can add other fields as needed
+}; 

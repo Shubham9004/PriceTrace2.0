@@ -3,7 +3,7 @@
 import { FormEvent, Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import Image from 'next/image'
-import { addUserEmailToProduct } from '@/lib/actions'
+import { addUserEmailToProductWithAlert } from '@/lib/actions'  // Make sure this function is updated in your actions
 
 interface Props {
   productId: string
@@ -13,17 +13,36 @@ const Modal = ({ productId }: Props) => {
   let [isOpen, setIsOpen] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [email, setEmail] = useState('');
+  const [targetPrice, setTargetPrice] = useState<number | string>(''); // Add state for target price
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    await addUserEmailToProduct(productId, email);
-
-    setIsSubmitting(false)
-    setEmail('')
-    closeModal()
-  }
+  
+    // Ensure targetPrice is converted to a number
+    const targetPriceNumber = parseFloat(targetPrice as string);
+  
+    if (!isNaN(targetPriceNumber)) {
+      try {
+        // Pass email and parsed targetPrice to the backend
+        await addUserEmailToProductWithAlert(productId, email, targetPriceNumber);
+        alert("You are now tracking this product!");
+  
+        setIsSubmitting(false);
+        setEmail("");
+        setTargetPrice(""); // Reset form fields
+        closeModal();
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to track the product. Please try again.");
+        setIsSubmitting(false);
+      }
+    } else {
+      alert("Please enter a valid target price.");
+      setIsSubmitting(false);
+    }
+  };
+  
 
   const openModal = () => setIsOpen(true);
 
@@ -87,15 +106,15 @@ const Modal = ({ productId }: Props) => {
                   </div>
 
                   <h4 className="dialog-head_text">
-                    Stay updated with product pricing alerts right in your inbox!
+                    Stay updated with product pricing alerts
                   </h4>
 
                   <p className="text-sm text-gray-600 mt-2">
-                    Never miss a bargain again with our timely alerts!
+                    Never miss a bargain again! Get timely updates right in your inbox.
                   </p>
                 </div>
 
-                <form className="flex flex-col mt-5" onSubmit={handleSubmit}>
+                <form className="flex flex-col mt-5" onSubmit={handleSubmit}>  
                   <label htmlFor="email" className="text-sm font-medium text-gray-700">
                     Email address
                   </label>
@@ -113,14 +132,34 @@ const Modal = ({ productId }: Props) => {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email address"
+                      placeholder="Enter Your Email Address"
                       className='dialog-input'
                     />
                   </div>
 
-                  <button type="submit"
-                    className="dialog-btn"
-                  >
+                  <label htmlFor="targetPrice" className="text-sm font-medium text-gray-700 mt-4">
+                    Target Price
+                  </label>
+                  <div className="dialog-input_container">
+                    <Image 
+                      src="/assets/icons/price-tag.svg"
+                      alt='price'
+                      width={18}
+                      height={18}
+                    />
+
+                    <input 
+                      required
+                      type="number"
+                      id="targetPrice"
+                      value={targetPrice}
+                      onChange={(e) => setTargetPrice(e.target.value)}
+                      placeholder="Enter Your Target Price"
+                      className='dialog-input'
+                    />
+                  </div>
+
+                  <button type="submit" className="dialog-btn">
                     {isSubmitting ? 'Submitting...' : 'Track'}
                   </button>
                 </form>

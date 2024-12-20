@@ -1,6 +1,4 @@
-"use server"
-
-import { EmailContent, EmailProductInfo, NotificationType } from '@/types';
+import { EmailContent, EmailProductInfo, NotificationType, User } from '@/types';
 import nodemailer from 'nodemailer';
 
 const Notification = {
@@ -8,47 +6,44 @@ const Notification = {
   CHANGE_OF_STOCK: 'CHANGE_OF_STOCK',
   LOWEST_PRICE: 'LOWEST_PRICE',
   THRESHOLD_MET: 'THRESHOLD_MET',
+  TARGET_PRICE_MET: 'TARGET_PRICE_MET',
 }
+
+const THRESHOLD_PERCENTAGE = 40; // Threshold for discount
 
 export async function generateEmailBody(
   product: EmailProductInfo,
-  type: NotificationType
-  ) {
-  const THRESHOLD_PERCENTAGE = 40;
-  // Shorten the product title
+  type: NotificationType,
+  user?: User,
+  additionalInfo: { targetPrice?: number } = {}
+) {
   const shortenedTitle =
     product.title.length > 20
       ? `${product.title.substring(0, 20)}...`
       : product.title;
 
-  let subject = "";
-  let body = "";
+  let subject = '';
+  let body = '';
 
   switch (type) {
     case Notification.WELCOME:
-      subject = `Welcome to Price Tracking for ${shortenedTitle}`;
+      subject = `Welcome to PriceTrace for ${shortenedTitle}`;
       body = `
         <div>
-          <h2>Welcome to PriceWise 🚀</h2>
-          <p>You are now tracking ${product.title}.</p>
-          <p>Here's an example of how you'll receive updates:</p>
-          <div style="border: 1px solid #ccc; padding: 10px; background-color: #f8f8f8;">
-            <h3>${product.title} is back in stock!</h3>
-            <p>We're excited to let you know that ${product.title} is now back in stock.</p>
-            <p>Don't miss out - <a href="${product.url}" target="_blank" rel="noopener noreferrer">buy it now</a>!</p>
-            <img src="https://i.ibb.co/pwFBRMC/Screenshot-2023-09-26-at-1-47-50-AM.png" alt="Product Image" style="max-width: 100%;" />
-          </div>
-          <p>Stay tuned for more updates on ${product.title} and other products you're tracking.</p>
+          <h2>Welcome to PriceTrace 🚀</h2>
+          <p>You are now tracking <strong>${product.title}</strong>.</p>
+          <p>Stay tuned for updates and notifications about this product.</p>
         </div>
       `;
       break;
 
-    case Notification.CHANGE_OF_STOCK:
-      subject = `${shortenedTitle} is now back in stock!`;
+    case Notification.TARGET_PRICE_MET:
+      subject = `Target Price Alert for ${shortenedTitle}`;
       body = `
         <div>
-          <h4>Hey, ${product.title} is now restocked! Grab yours before they run out again!</h4>
-          <p>See the product <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a>.</p>
+          <h4>Good news! The product <strong>${product.title}</strong> has reached your target price!</h4>
+          <p>Current price: ₹${product.currentPrice}</p>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Click here to buy now</a></p>
         </div>
       `;
       break;
@@ -57,8 +52,19 @@ export async function generateEmailBody(
       subject = `Lowest Price Alert for ${shortenedTitle}`;
       body = `
         <div>
-          <h4>Hey, ${product.title} has reached its lowest price ever!!</h4>
-          <p>Grab the product <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a> now.</p>
+          <h4>The product <strong>${product.title}</strong> has reached its lowest price!</h4>
+          <p>Current price: ₹${product.currentPrice}</p>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Check it out here</a></p>
+        </div>
+      `;
+      break;
+
+    case Notification.CHANGE_OF_STOCK:
+      subject = `${shortenedTitle} is back in stock!`;
+      body = `
+        <div>
+          <h4>The product <strong>${product.title}</strong> is now back in stock!</h4>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Buy it now</a></p>
         </div>
       `;
       break;
@@ -74,34 +80,54 @@ export async function generateEmailBody(
       break;
 
     default:
-      throw new Error("Invalid notification type.");
+      console.warn('[PriceTrace] Notification type not recognized:', type);
+      return {
+        subject: '[PriceTrace] Notification',
+        body: '<div><p>Notification type not recognized. Please check your settings.</p></div>',
+      };
   }
 
   return { subject, body };
 }
 
+// Updated Nodemailer transporter configuration
 const transporter = nodemailer.createTransport({
-  pool: true,
-  service: 'hotmail',
-  port: 2525,
+  host: 'smtp.hostinger.com',
+  port: 587,
+  secure: false,
   auth: {
-    user: 'ShubhamRBorde@outlook.com',
-    pass: process.env.EMAIL_PASSWORD,
+    user: 'contact@bscit.online',
+    pass: process.env.EMAIL_PASSWORD, // Ensure EMAIL_PASSWORD is set in your environment
   },
-  maxConnections: 1
-})
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
+// Send email function
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
-    from: 'ShubhamRBorde@outlook.com',
+    from: 'contact@bscit.online',
     to: sendTo,
     html: emailContent.body,
     subject: emailContent.subject,
-  }
+  };
 
-  transporter.sendMail(mailOptions, (error: any, info: any) => {
-    if(error) return console.log(error);
-    
-    console.log('Email sent: ', info);
-  })
-}
+  try {
+    console.log('Attempting to send email with the following options:', mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully:', {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response,
+    });
+  } catch (error) {
+    console.error('Error while sending email:', error);
+  }
+};
+
+// Log if no functions are called
+// if (require.main === module) {
+//   console.log('[PriceTrace] No functions were called. Ensure to invoke generateEmailBody or sendEmail as needed.');
+// }

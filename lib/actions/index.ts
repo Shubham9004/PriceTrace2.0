@@ -1,32 +1,48 @@
-"use server"
+"use server";
 
 import { revalidatePath } from "next/cache";
 import Product from "../models/product.model";
 import { connectToDB } from "../mongoose";
-import { scrapeAmazonProduct } from "../scraper";
+import { scrapeAmazonProduct, scrapeFlipkartProduct, scrapeMeeshoProduct } from "../scraper"; // Import Meesho scraper
 import { getAveragePrice, getHighestPrice, getLowestPrice } from "../utils";
 import { User } from "@/types";
 import { generateEmailBody, sendEmail } from "../nodemailer";
 
+// Modified function to handle Amazon, Flipkart, and Meesho
 export async function scrapeAndStoreProduct(productUrl: string) {
-  if(!productUrl) return;
+  if (!productUrl) return;
 
   try {
     connectToDB();
 
-    const scrapedProduct = await scrapeAmazonProduct(productUrl);
+    // Detect platform based on the URL
+    const platform = getPlatformFromUrl(productUrl);
 
-    if(!scrapedProduct) return;
+    if (!platform) {
+      throw new Error("Unsupported platform");
+    }
+
+    // Scrape product based on the platform (Amazon, Flipkart, or Meesho)
+    let scrapedProduct;
+    if (platform === "amazon") {
+      scrapedProduct = await scrapeAmazonProduct(productUrl);
+    } else if (platform === "flipkart") {
+      scrapedProduct = await scrapeFlipkartProduct(productUrl);
+    } else if (platform === "meesho") {
+      scrapedProduct = await scrapeMeeshoProduct(productUrl);
+    }
+
+    if (!scrapedProduct) return;
 
     let product = scrapedProduct;
 
     const existingProduct = await Product.findOne({ url: scrapedProduct.url });
 
-    if(existingProduct) {
+    if (existingProduct) {
       const updatedPriceHistory: any = [
         ...existingProduct.priceHistory,
-        { price: scrapedProduct.currentPrice }
-      ]
+        { price: scrapedProduct.currentPrice },
+      ];
 
       product = {
         ...scrapedProduct,
@@ -34,7 +50,7 @@ export async function scrapeAndStoreProduct(productUrl: string) {
         lowestPrice: getLowestPrice(updatedPriceHistory),
         highestPrice: getHighestPrice(updatedPriceHistory),
         averagePrice: getAveragePrice(updatedPriceHistory),
-      }
+      };
     }
 
     const newProduct = await Product.findOneAndUpdate(
@@ -45,17 +61,30 @@ export async function scrapeAndStoreProduct(productUrl: string) {
 
     revalidatePath(`/products/${newProduct._id}`);
   } catch (error: any) {
-    throw new Error(`Failed to create/update product: ${error.message}`)
+    throw new Error(`Failed to create/update product: ${error.message}`);
   }
 }
 
+// Function to determine the platform based on the URL
+function getPlatformFromUrl(url: string): string | null {
+  if (url.includes("amazon.com") || url.includes("amazon.in")) {
+    return "amazon";
+  } else if (url.includes("flipkart.com")) {
+    return "flipkart";
+  } else if (url.includes("meesho.com")) {
+    return "meesho";
+  }
+  return null;
+}
+
+// Other functions remain unchanged
 export async function getProductById(productId: string) {
   try {
     connectToDB();
 
     const product = await Product.findOne({ _id: productId });
 
-    if(!product) return null;
+    if (!product) return null;
 
     return product;
   } catch (error) {
@@ -81,7 +110,7 @@ export async function getSimilarProducts(productId: string) {
 
     const currentProduct = await Product.findById(productId);
 
-    if(!currentProduct) return null;
+    if (!currentProduct) return null;
 
     const similarProducts = await Product.find({
       _id: { $ne: productId },
@@ -93,24 +122,44 @@ export async function getSimilarProducts(productId: string) {
   }
 }
 
-export async function addUserEmailToProduct(productId: string, userEmail: string) {
+export async function addUserEmailToProductWithAlert(
+  productId: string,
+  userEmail: string,
+  targetPrice: number
+) {
   try {
+    connectToDB();
+
+    // Find the product by its ID
     const product = await Product.findById(productId);
 
-    if(!product) return;
+    if (!product) throw new Error("Product not found");
 
+    // Check if the user already exists
     const userExists = product.users.some((user: User) => user.email === userEmail);
 
-    if(!userExists) {
-      product.users.push({ email: userEmail });
+    if (!userExists) {
+      // Add user with targetPrice
+      product.users.push({ email: userEmail, targetPrice });
 
+      // Save the updated product
       await product.save();
 
-      const emailContent = await generateEmailBody(product, "WELCOME");
-
+      // Send a welcome email
+      const emailContent = await generateEmailBody (product, "WELCOME");
       await sendEmail(emailContent, [userEmail]);
+    } else {
+      // If the user exists, update their targetPrice
+      const userIndex = product.users.findIndex(
+        (user: User) => user.email === userEmail
+      );
+      product.users[userIndex].targetPrice = targetPrice;
+
+      // Save the updated product
+      await product.save();
     }
   } catch (error) {
-    console.log(error);
+    console.error("Error adding/updating user with alert:", error);
+    throw new Error("Failed to add/update user with alert");
   }
 }
