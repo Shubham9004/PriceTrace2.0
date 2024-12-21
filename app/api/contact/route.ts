@@ -21,7 +21,7 @@ interface EmailContent {
   body: string;
 }
 
-// Function to send email (defined inside the POST handler)
+// The sendEmail function should NOT be exported
 async function sendEmail(emailContent: EmailContent, sendTo: string[]) {
   const mailOptions = {
     from: 'contact@bscit.online', // Sender's email
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   // Define the email content
   const emailContent: EmailContent = {
     subject: `New contact form submission from ${name} - Subject: ${subject}`, // Include the custom subject here
-    body: `  
+    body: `
       <p>You have received a new message from ${name} (${email}):</p>
       <p><strong>Message:</strong></p>
       <p>${message}</p>
