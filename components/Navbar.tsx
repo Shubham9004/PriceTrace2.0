@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 const navLinks = [
-  { name: 'Home', link: '/' },
-  { name: 'About Us', link: '/about' },
-  { name: 'Services', link: '/services' },
-  { name: 'Contact Us', link: '/contact' },
+  { name: 'Home', link: '/' },          // Home page (root)
+  { name: 'About Us', link: '/about-us' },  // About Us page
+  { name: 'Services', link: '/services' },  // Services page
+  { name: 'Contact Us', link: '/contact-us' }, // Contact Us page
 ];
 
 const Navbar = () => {

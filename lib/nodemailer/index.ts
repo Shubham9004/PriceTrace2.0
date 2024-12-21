@@ -1,16 +1,20 @@
 import { EmailContent, EmailProductInfo, NotificationType, User } from '@/types';
 import nodemailer from 'nodemailer';
 
+// Notification Types
 const Notification = {
   WELCOME: 'WELCOME',
   CHANGE_OF_STOCK: 'CHANGE_OF_STOCK',
   LOWEST_PRICE: 'LOWEST_PRICE',
   THRESHOLD_MET: 'THRESHOLD_MET',
   TARGET_PRICE_MET: 'TARGET_PRICE_MET',
-}
+};
 
 const THRESHOLD_PERCENTAGE = 40; // Threshold for discount
 
+/**
+ * Generate Email Body
+ */
 export async function generateEmailBody(
   product: EmailProductInfo,
   type: NotificationType,
@@ -25,14 +29,41 @@ export async function generateEmailBody(
   let subject = '';
   let body = '';
 
+  const commonStyles = `
+    font-family: Arial, sans-serif; color: #333; line-height: 1.5; text-align: center;
+    padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;
+  `;
+  const headerStyles = `
+    font-size: 24px; color: #d9534f; font-weight: bold; margin-bottom: 20px;
+  `;
+  const productImageStyles = `
+    max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;
+  `;
+  const buttonStyles = `
+    display: inline-block; margin-top: 20px; padding: 10px 20px;
+    font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none;
+    border-radius: 4px;
+  `;
+  const footerStyles = `
+    margin-top: 40px; font-size: 12px; color: #777; text-align: center;
+  `;
+
   switch (type) {
     case Notification.WELCOME:
       subject = `Welcome to PriceTrace for ${shortenedTitle}`;
       body = `
-        <div>
-          <h2>Welcome to PriceTrace 🚀</h2>
+        <div style="${commonStyles}">
+          <div style="${headerStyles}">
+            🚀 Welcome to PriceTrace!
+          </div>
+          <img src="${product.image}" alt="${product.title}" style="${productImageStyles}" />
           <p>You are now tracking <strong>${product.title}</strong>.</p>
           <p>Stay tuned for updates and notifications about this product.</p>
+          <a href="${product.url}" style="${buttonStyles}" target="_blank" rel="noopener noreferrer">Explore Product</a>
+          <div style="${footerStyles}">
+            Missing out on PriceTrace updates? Add us to your primary inbox!<br/>
+            This email was sent by PriceTrace (Nalanda Housing Society, St Xavier Road, Mumbai - 40042).<br/> </a>.
+          </div>
         </div>
       `;
       break;
@@ -40,10 +71,18 @@ export async function generateEmailBody(
     case Notification.TARGET_PRICE_MET:
       subject = `Target Price Alert for ${shortenedTitle}`;
       body = `
-        <div>
-          <h4>Good news! The product <strong>${product.title}</strong> has reached your target price!</h4>
-          <p>Current price: ₹${product.currentPrice}</p>
-          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Click here to buy now</a></p>
+        <div style="${commonStyles}">
+          <div style="${headerStyles}">
+            🎯 Your Target Price is Here!
+          </div>
+          <img src="${product.image}" alt="${product.title}" style="${productImageStyles}" />
+          <p>The product <strong>${product.title}</strong> has reached your target price of !</p>
+          <p>Current price: <strong>₹${product.currentPrice}</strong></p>
+          <a href="${product.url}" style="${buttonStyles}" target="_blank" rel="noopener noreferrer">Buy Now</a>
+          <div style="${footerStyles}">
+            Missing out on PriceTrace updates? Add us to your primary inbox!<br/>
+            This email was sent by PriceTrace (Nalanda Housing Society, St Xavier Road, Mumbai - 40042).<br/></a>.
+          </div>
         </div>
       `;
       break;
@@ -51,20 +90,36 @@ export async function generateEmailBody(
     case Notification.LOWEST_PRICE:
       subject = `Lowest Price Alert for ${shortenedTitle}`;
       body = `
-        <div>
-          <h4>The product <strong>${product.title}</strong> has reached its lowest price!</h4>
-          <p>Current price: ₹${product.currentPrice}</p>
-          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Check it out here</a></p>
+        <div style="${commonStyles}">
+          <div style="${headerStyles}">
+            🔥 Lowest Price Alert!
+          </div>
+          <img src="${product.image}" alt="${product.title}" style="${productImageStyles}" />
+          <p>The product <strong>${product.title}</strong> is now at its lowest price!</p>
+          <p>Current price: <strong>₹${product.currentPrice}</strong></p>
+          <a href="${product.url}" style="${buttonStyles}" target="_blank" rel="noopener noreferrer">Check It Out</a>
+          <div style="${footerStyles}">
+            Missing out on PriceTrace updates? Add us to your primary inbox!<br/>
+            This email was sent by PriceTrace (Nalanda Housing Society, St Xavier Road, Mumbai - 40042).<br/></a>.
+          </div>
         </div>
       `;
       break;
 
     case Notification.CHANGE_OF_STOCK:
-      subject = `${shortenedTitle} is back in stock!`;
+      subject = `${shortenedTitle} is Back in Stock!`;
       body = `
-        <div>
-          <h4>The product <strong>${product.title}</strong> is now back in stock!</h4>
-          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Buy it now</a></p>
+        <div style="${commonStyles}">
+          <div style="${headerStyles}">
+            🚨 Back in Stock!
+          </div>
+          <img src="${product.image}" alt="${product.title}" style="${productImageStyles}" />
+          <p>The product <strong>${product.title}</strong> is now back in stock!</p>
+          <a href="${product.url}" style="${buttonStyles}" target="_blank" rel="noopener noreferrer">Buy Now</a>
+          <div style="${footerStyles}">
+            Missing out on PriceTrace updates? Add us to your primary inbox!<br/>
+            This email was sent by PriceTrace (Nalanda Housing Society, St Xavier Road, Mumbai - 40042).<br/></a>.
+          </div>
         </div>
       `;
       break;
@@ -72,9 +127,17 @@ export async function generateEmailBody(
     case Notification.THRESHOLD_MET:
       subject = `Discount Alert for ${shortenedTitle}`;
       body = `
-        <div>
-          <h4>Hey, ${product.title} is now available at a discount more than ${THRESHOLD_PERCENTAGE}%!</h4>
-          <p>Grab it right away from <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a>.</p>
+        <div style="${commonStyles}">
+          <div style="${headerStyles}">
+            💰 Big Discount Alert!
+          </div>
+          <img src="${product.image}" alt="${product.title}" style="${productImageStyles}" />
+          <p>Hey, <strong>${product.title}</strong> is now available at a discount greater than ${THRESHOLD_PERCENTAGE}%!</p>
+          <a href="${product.url}" style="${buttonStyles}" target="_blank" rel="noopener noreferrer">Shop Now</a>
+          <div style="${footerStyles}">
+            Missing out on PriceTrace updates? Add us to your primary inbox!<br/>
+            This email was sent by PriceTrace (Nalanda Housing Society, St Xavier Road, Mumbai - 40042).<br/></a>.
+          </div>
         </div>
       `;
       break;
@@ -83,14 +146,20 @@ export async function generateEmailBody(
       console.warn('[PriceTrace] Notification type not recognized:', type);
       return {
         subject: '[PriceTrace] Notification',
-        body: '<div><p>Notification type not recognized. Please check your settings.</p></div>',
+        body: `
+          <div style="${commonStyles}">
+            <h2>Notification Type Not Recognized</h2>
+            <p>Please check your settings or contact support for assistance.</p>
+          </div>
+        `,
       };
   }
 
   return { subject, body };
 }
-
-// Updated Nodemailer transporter configuration
+/**
+ * Nodemailer Transporter Configuration
+ */
 const transporter = nodemailer.createTransport({
   host: 'smtp.hostinger.com',
   port: 587,
@@ -104,7 +173,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Send email function
+/**
+ * Send Email
+ */
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
     from: 'contact@bscit.online',
@@ -126,8 +197,3 @@ export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) =>
     console.error('Error while sending email:', error);
   }
 };
-
-// Log if no functions are called
-// if (require.main === module) {
-//   console.log('[PriceTrace] No functions were called. Ensure to invoke generateEmailBody or sendEmail as needed.');
-// }

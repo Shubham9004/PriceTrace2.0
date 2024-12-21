@@ -5,11 +5,11 @@ import { FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 const footerLinks = [
   { name: 'Home', link: '/' },
-  { name: 'About Us', link: '/about' },
+  { name: 'About Us', link: '/about-us' },
   { name: 'Services', link: '/services' },
-  { name: 'Contact Us', link: '/contact' },
+  { name: 'Contact Us', link: '/contact-us' },
   { name: 'Privacy Policy', link: '/privacy-policy' },
-  { name: 'Terms of Service', link: '/terms' },
+  { name: 'Terms of Service', link: '/Terms-And-Services' },
 ];
 
 const socialLinks = [
@@ -57,9 +57,9 @@ const Footer = () => {
             <h3 className="text-lg font-semibold">
               <span className="text-secondary">Contact</span> <span className="text-primary">Info</span>
             </h3>
-            <p className="text-sm text-gray-600">1234 Street Name, City, Country</p>
+            <p className="text-sm text-gray-600">1 St Xavier Rd, Mumbai 400042, Maharashtra </p>
             <p className="text-sm text-gray-600">Email: contact@pricetrace.com</p>
-            <p className="text-sm text-gray-600">Phone: +1 (123) 456-7890</p>
+            <p className="text-sm text-gray-600">Phone: +91 9967640***</p>
           </div>
 
           {/* Social Media Links Section */}
@@ -92,7 +92,7 @@ const Footer = () => {
             </p>
             <div className="mt-4 md:mt-0">
               <Link href="/privacy-policy" className="hover:text-primary mx-4">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary mx-4">Terms of Service</Link>
+              <Link href="/Terms-And-Services" className="hover:text-primary mx-4">Terms of Service</Link>
             </div>
           </div>
         </div>
