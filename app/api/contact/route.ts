@@ -21,8 +21,8 @@ interface EmailContent {
   body: string;
 }
 
-// Function to send email
-export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
+// Function to send email (defined inside the POST handler)
+async function sendEmail(emailContent: EmailContent, sendTo: string[]) {
   const mailOptions = {
     from: 'contact@bscit.online', // Sender's email
     to: sendTo, // List of recipients
@@ -37,7 +37,7 @@ export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) =>
     console.error('Error sending email:', error);
     return { status: 'error', message: 'Failed to send email' };
   }
-};
+}
 
 // Handle the POST request from the contact form
 export async function POST(req: Request) {
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   // Define the email content
   const emailContent: EmailContent = {
     subject: `New contact form submission from ${name} - Subject: ${subject}`, // Include the custom subject here
-    body: `
+    body: `  
       <p>You have received a new message from ${name} (${email}):</p>
       <p><strong>Message:</strong></p>
       <p>${message}</p>
