@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 // Configure the Nodemailer transporter with the given details
-const transporter = nodemailer.createTransport({
+const contactTransporter = nodemailer.createTransport({
   host: 'smtp.hostinger.com',
   port: 587,
   secure: false, // Use TLS, not SSL
@@ -16,13 +16,13 @@ const transporter = nodemailer.createTransport({
 });
 
 // Define the email content structure
-interface EmailContent {
+interface ContactEmailContent {
   subject: string;
   body: string;
 }
 
-// The sendEmail function should NOT be exported
-async function sendEmail(emailContent: EmailContent, sendTo: string[]) {
+// Rename the sendEmail function to contactSendMessageEmail
+async function contactSendMessageEmail(emailContent: ContactEmailContent, sendTo: string[]) {
   const mailOptions = {
     from: 'contact@bscit.online', // Sender's email
     to: sendTo, // List of recipients
@@ -31,7 +31,7 @@ async function sendEmail(emailContent: EmailContent, sendTo: string[]) {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await contactTransporter.sendMail(mailOptions);
     return { status: 'success' };
   } catch (error) {
     console.error('Error sending email:', error);
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   }
 
   // Define the email content
-  const emailContent: EmailContent = {
+  const emailContent: ContactEmailContent = {
     subject: `New contact form submission from ${name} - Subject: ${subject}`, // Include the custom subject here
     body: `
       <p>You have received a new message from ${name} (${email}):</p>
@@ -61,8 +61,8 @@ export async function POST(req: Request) {
     `,
   };
 
-  // Send the email
-  const result = await sendEmail(emailContent, ['contact@bscit.online']);
+  // Send the email using the renamed function
+  const result = await contactSendMessageEmail(emailContent, ['contact@bscit.online']);
 
   if (result.status === 'success') {
     return NextResponse.json(
