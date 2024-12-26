@@ -32,17 +32,18 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
     
     const outOfStock = $("div._16FRp0").text().toLowerCase().includes("out of stock");
 
-    // Handle image extraction
+  // Extract high-quality image from `srcset` or fallback to `src`
     const imageElement = $("img.DByuf4.IZexXJ.jLEJ7H");
     let image = imageElement.attr("src") || "";
+
     const srcset = imageElement.attr("srcset");
-    if (srcset) {
+      if (srcset) {
       const srcsetParts = srcset.split(",");
-      const highResImage = srcsetParts.find((part) => part.includes("2x"));
+    const highResImage = srcsetParts.find((part) => part.includes("2x")); // Find the 2x resolution
       if (highResImage) {
-        image = highResImage.split(" ")[0].trim();
+      image = highResImage.split(" ")[0].trim(); // Extract the URL portion
       }
-    }
+      }
 
     // Extract numeric values
     const currency = "₹";
