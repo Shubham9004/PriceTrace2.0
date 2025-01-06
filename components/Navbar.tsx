@@ -13,6 +13,10 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleLinkClick = () => {
+    setIsOpen(false); // Close the menu when a link is clicked
+  };
+
   return (
     <header className="w-full bg-white shadow-md">
       <nav className="container mx-auto flex justify-between items-center py-4 px-6 md:px-10">
@@ -50,7 +54,12 @@ const Navbar = () => {
           <div className="absolute top-16 left-0 w-full bg-white shadow-md md:hidden">
             <div className="flex flex-col items-center py-4 space-y-2">
               {navLinks.map((link) => (
-                <Link key={link.name} href={link.link} className="text-lg font-medium hover:text-primary">
+                <Link 
+                  key={link.name} 
+                  href={link.link} 
+                  className="text-lg font-medium hover:text-primary" 
+                  onClick={handleLinkClick} // Close the menu when a link is clicked
+                >
                   {link.name}
                 </Link>
               ))}

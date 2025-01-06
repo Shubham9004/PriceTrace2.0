@@ -7,11 +7,20 @@ import { ScrapedProduct, PriceHistoryItem } from "./productInterfaces"; // Impor
 
 dotenv.config();
 
-// Function to sanitize a string and remove invalid UTF-8 characters
+/**
+ * Sanitize a string by removing invalid UTF-8 characters and trimming whitespace.
+ * @param text - The string to sanitize.
+ * @returns The sanitized string.
+ */
 function sanitizeText(text: string): string {
   return text.replace(/[^\x00-\x7F]/g, "").trim();
 }
 
+/**
+ * Scrape product details from Flipkart using the given URL.
+ * @param url - The Flipkart product URL.
+ * @returns A promise resolving to the scraped product data or null.
+ */
 export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct | null> {
   if (!url) return null;
 
@@ -23,50 +32,101 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
 
     const $ = cheerio.load(responseBody);
 
+    // Extract breadcrumb data for category
+    const breadcrumb: string[] = []; // Initialize breadcrumb array
+    const breadcrumbLinks = $(".r2CdBx a.R0cyWM");
+
+    breadcrumbLinks.each((index, element) => {
+      breadcrumb.push(sanitizeText($(element).text())); // Add sanitized breadcrumb text
+    });
+
+    // Log the breadcrumb
+    console.log("Extracted Breadcrumb:", breadcrumb.join(" > "));
+
+    // Use the second breadcrumb item as the category, fallback to "Unknown Category" if unavailable
+    const category = breadcrumb[1] || "Unknown Category";
+
     // Extract and sanitize product details
     const title = sanitizeText($("span.VU-ZEz").text());
     const currentPriceText = sanitizeText($("div.Nx9bqj.CxhGGd").text());
     const originalPriceText = sanitizeText($("div.yRaY8j").first().text().replace(/₹|,/g, ""));
     const discountRateText = sanitizeText($("div.UkUFwK.WW8yVX span").text());
     const description = sanitizeText($("div.cPHDOP.col-12-12 div._4gvKMe p").text());
-    
     const outOfStock = $("div._16FRp0").text().toLowerCase().includes("out of stock");
 
-  // Extract high-quality image from `srcset` or fallback to `src`
-    const imageElement = $("img.DByuf4.IZexXJ.jLEJ7H");
-    let image = imageElement.attr("src") || "";
+    // Extract stars (rating)
+    const starsText = sanitizeText($("div.XQDdHH").first().text());
+    const stars = parseFloat(starsText) || 0;
 
-    const srcset = imageElement.attr("srcset");
+    // Extract reviews count
+    const reviewsText = sanitizeText($("span.Wphh3N span").last().text());
+    const reviewsCountMatch = reviewsText.match(/(\d{1,3}(?:,\d{3})*)/); // Match numbers with commas
+    const reviewsCount = reviewsCountMatch ? parseInt(reviewsCountMatch[1].replace(/,/g, ""), 10) : 0;
+
+    // Log extracted values for debugging
+    console.log("Stars:", stars);
+    console.log("Reviews Count:", reviewsCount);
+
+    // Extract image URL
+    let imageElement = $("img._53J4C-.utBuJY");
+    let image = "";
+
+    if (imageElement.length > 0) {
+      // Use the `src` attribute
+      image = imageElement.attr("src") || "";
+
+      // Check for higher resolution image in `srcset`
+      const srcset = imageElement.attr("srcset");
       if (srcset) {
-      const srcsetParts = srcset.split(",");
-    const highResImage = srcsetParts.find((part) => part.includes("2x")); // Find the 2x resolution
-      if (highResImage) {
-      image = highResImage.split(" ")[0].trim(); // Extract the URL portion
+        const srcsetParts = srcset.split(",");
+        const highResImage = srcsetParts.find((part) => part.includes("2x"));
+        if (highResImage) {
+          image = highResImage.split(" ")[0].trim();
+        }
       }
-      }
+    } else {
+      // Fallback to an alternative selector if no image is found
+      imageElement = $("img.DByuf4.IZexXJ.jLEJ7H");
+      if (imageElement.length > 0) {
+        image = imageElement.attr("src") || "";
 
-    // Extract numeric values
+        const srcset = imageElement.attr("srcset");
+        if (srcset) {
+          const srcsetParts = srcset.split(",");
+          const highResImage = srcsetParts.find((part) => part.includes("2x"));
+          if (highResImage) {
+            image = highResImage.split(" ")[0].trim();
+          }
+        }
+      }
+    }
+
+    // Log the image URL
+    if (image) {
+      console.log("Image URL:", image);
+    } else {
+      console.log("No image found");
+    }
+
+    // Parse and validate numeric values
     const currency = "₹";
     const currentPrice = parseFloat(currentPriceText.replace(/[^\d.]/g, "")) || 0;
     const originalPrice = parseFloat(originalPriceText.replace(/[^\d.]/g, "")) || 0;
-
-    // Validate original price
     const validatedOriginalPrice = originalPrice >= currentPrice ? originalPrice : 0;
 
-    // Calculate price history
+    // Create price history with only the current price
     const priceHistory: PriceHistoryItem[] = [
-      { price: currentPrice, date: new Date().toISOString() },
-      ...(validatedOriginalPrice ? [{ price: validatedOriginalPrice, date: new Date().toISOString() }] : []),
-    ];
+      { price: currentPrice, date: new Date().toISOString() }
+      ];
+      console.log("Constructed Price History:", priceHistory); // Log price history
 
-    // Determine price statistics
+      
+    // Calculate price statistics
     const lowestPrice = Math.min(...priceHistory.map((item) => item.price));
     const highestPrice = Math.max(...priceHistory.map((item) => item.price));
     const averagePrice = (lowestPrice + highestPrice) / 2 || 0;
 
-    const category = "category"; // Placeholder, as category extraction isn't specified
-
-    // Construct final product data
+    // Construct the final product data object
     const productData: ScrapedProduct = {
       url,
       currency,
@@ -77,8 +137,8 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
       priceHistory,
       discountRate: discountRateText ? parseInt(discountRateText.replace(/[^\d]/g, ""), 10) : 0,
       category,
-      reviewsCount: 0, // Reviews count not extracted
-      stars: 0, // Rating stars not extracted
+      reviewsCount,
+      stars,
       isOutOfStock: outOfStock,
       description,
       lowestPrice,
@@ -86,6 +146,7 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
       averagePrice,
     };
 
+    // Log the final scraped data for debugging
     console.log("Scraped Data:", productData);
 
     return productData;

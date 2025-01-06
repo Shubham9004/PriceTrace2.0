@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import Product from "../models/product.model";
 import { connectToDB } from "../mongoose";
 import { scrapeAmazonProduct, scrapeFlipkartProduct, scrapeMeeshoProduct } from "../scraper"; // Import Meesho scraper
-import { getAveragePrice, getHighestPrice, getLowestPrice } from "../utils";
 import { User } from "@/types";
 import { generateEmailBody, sendEmail } from "../nodemailer";
 
@@ -47,9 +46,9 @@ export async function scrapeAndStoreProduct(productUrl: string) {
       product = {
         ...scrapedProduct,
         priceHistory: updatedPriceHistory,
-        lowestPrice: getLowestPrice(updatedPriceHistory),
-        highestPrice: getHighestPrice(updatedPriceHistory),
-        averagePrice: getAveragePrice(updatedPriceHistory),
+        lowestPrice: calculateLowestPrice(updatedPriceHistory),
+        highestPrice: calculateHighestPrice(updatedPriceHistory),
+        averagePrice: calculateAveragePrice(updatedPriceHistory),
       };
     }
 
@@ -63,6 +62,25 @@ export async function scrapeAndStoreProduct(productUrl: string) {
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`);
   }
+}
+
+// Function to calculate the lowest price from price history
+function calculateLowestPrice(priceHistory: any[]): number {
+  const prices = priceHistory.map(item => item.price);
+  return Math.min(...prices);
+}
+
+// Function to calculate the highest price from price history
+function calculateHighestPrice(priceHistory: any[]): number {
+  const prices = priceHistory.map(item => item.price);
+  return Math.max(...prices);
+}
+
+// Function to calculate the average price from price history
+function calculateAveragePrice(priceHistory: any[]): number {
+  const prices = priceHistory.map(item => item.price);
+  const total = prices.reduce((acc, curr) => acc + curr, 0);
+  return prices.length ? total / prices.length : 0;
 }
 
 // Function to determine the platform based on the URL
@@ -108,13 +126,26 @@ export async function getSimilarProducts(productId: string) {
   try {
     connectToDB();
 
+    // Find the current product by its ID
     const currentProduct = await Product.findById(productId);
-
+    
     if (!currentProduct) return null;
 
-    const similarProducts = await Product.find({
-      _id: { $ne: productId },
-    }).limit(3);
+    // Extract the category of the current product
+    const productCategory = currentProduct.category;
+
+    // Find products in the same category across all platforms
+    let similarProducts = await Product.find({
+      category: productCategory,  // Filter by the same category
+      _id: { $ne: productId },    // Exclude the current product
+    }).limit(6); // Limit to 3 similar products
+
+    // If no similar products in the same category, fallback to other products
+    if (similarProducts.length === 0) {
+      similarProducts = await Product.find({
+        _id: { $ne: productId }, // Exclude the current product
+      }).limit(6); // Limit to 3 random products
+    }
 
     return similarProducts;
   } catch (error) {
@@ -146,7 +177,7 @@ export async function addUserEmailToProductWithAlert(
       await product.save();
 
       // Send a welcome email
-      const emailContent = await generateEmailBody (product, "WELCOME");
+      const emailContent = await generateEmailBody(product, "WELCOME");
       await sendEmail(emailContent, [userEmail]);
     } else {
       // If the user exists, update their targetPrice

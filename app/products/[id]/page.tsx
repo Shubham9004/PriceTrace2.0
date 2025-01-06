@@ -8,6 +8,7 @@ import { Product } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import PriceHistoryChart from "@/components/PriceHistoryChart"; // Imported the PriceHistoryChart
 
 type Props = {
   params: { id: string };
@@ -150,6 +151,12 @@ const ProductDetails = async ({ params: { id } }: Props) => {
 
           <Modal productId={id} />
         </div>
+      </div>
+
+      {/* Price History Chart in its own container */}
+      <div className="chart-container my-10">
+      <h3 className="text-2xl text-secondary font-semibold">Price History</h3>
+        <PriceHistoryChart productId={id} />
       </div>
 
       <div className="flex flex-col gap-16">

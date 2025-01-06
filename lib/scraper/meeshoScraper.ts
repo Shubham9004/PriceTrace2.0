@@ -62,20 +62,24 @@ export async function scrapeMeeshoProduct(url: string): Promise<ScrapedProduct |
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
       : 0;
 
-    // Calculate price history
-    const priceHistory: PriceHistoryItem[] = [
-      { price: currentPrice, date: new Date().toISOString() },
-      ...(originalPrice ? [{ price: originalPrice, date: new Date().toISOString() }] : []),
-    ];
+      // Calculate price history with only the current price
+      const priceHistory: PriceHistoryItem[] = [
+      { price: currentPrice, date: new Date().toISOString() }
+      ];
+      console.log("Constructed Price History:", priceHistory); // Log price history
+
 
     const lowestPrice = Math.min(...priceHistory.map((item) => item.price));
     const highestPrice = Math.max(...priceHistory.map((item) => item.price));
     const averagePrice =
       priceHistory.reduce((sum, item) => sum + item.price, 0) / priceHistory.length || 0;
 
-    // Placeholder for reviews and stars (not explicitly available on Meesho)
-    const reviewsCount = 0;
-    const stars = 0;
+ // Extract star rating and reviews count
+ const starRatingText = $("span.sc-eDvSVe.laVOtN").text().trim(); // Star rating text (e.g., "4.0")
+ const reviewsCountText = $("span.ShippingInfo__OverlineStyled-sc-frp12n-4").text().trim(); // Reviews count
+
+ const stars = parseFloat(starRatingText) || 0;
+ const reviewsCount = parseInt(reviewsCountText.split(' ')[0], 10) || 0;
 
     // Construct final product data
     const productData: ScrapedProduct = {

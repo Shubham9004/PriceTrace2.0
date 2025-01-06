@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getLowestPrice, getHighestPrice, getAveragePrice, getEmailNotifType } from "@/lib/utils";
 import { connectToDB } from "@/lib/mongoose";
 import Product from "@/lib/models/product.model";
 import { scrapeAmazonProduct, scrapeFlipkartProduct, scrapeMeeshoProduct } from "@/lib/scraper";
 import { generateEmailBody, sendEmail } from "@/lib/nodemailer";
 import { User } from '@/types';
+import { getEmailNotifType } from "@/lib/utils"; // Only reimport getEmailNotifType
 
 export const maxDuration = 60; // This function can run for a maximum of 300 seconds
 export const dynamic = "force-dynamic";
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
           return;
         }
 
-        // Update product price history
+        // ======================== 2 Update product price history
         const updatedPriceHistory = [
           ...currentProduct.priceHistory,
           {
@@ -64,9 +64,6 @@ export async function GET(request: Request) {
         const product = {
           ...scrapedProduct,
           priceHistory: updatedPriceHistory,
-          lowestPrice: getLowestPrice(updatedPriceHistory),
-          highestPrice: getHighestPrice(updatedPriceHistory),
-          averagePrice: getAveragePrice(updatedPriceHistory),
         };
 
         console.log("Updating product in database...");
@@ -83,11 +80,8 @@ export async function GET(request: Request) {
 
         console.log(`Product updated successfully: ${updatedProduct.title}`);
 
-        // ======================== 2 CHECK EACH PRODUCT'S STATUS & SEND EMAIL ACCORDINGLY
-        const emailNotifType: ReturnType<typeof getEmailNotifType> | null = getEmailNotifType(
-          scrapedProduct,
-          currentProduct
-        );
+        // ======================== 3 Check each product's status & send email accordingly
+        const emailNotifType = getEmailNotifType(scrapedProduct, currentProduct);
 
         console.log("Email notification type:", emailNotifType);
 
@@ -113,30 +107,30 @@ export async function GET(request: Request) {
           }
         }
 
-// ======================== 3 CHECK FOR TARGET PRICE NOTIFICATIONS
-if (updatedProduct?.users) {
-  for (const user of updatedProduct.users as User[]) {
-    console.log(`Checking target price for user: ${user.email}`);
-    if (user.targetPrice && user.targetPrice > 0 && scrapedProduct.currentPrice <= user.targetPrice) {
-      console.log(`Target price met for user: ${user.email}, Product: ${updatedProduct.title}`);
-      const productInfo = {
-        title: updatedProduct.title,
-        url: updatedProduct.url,
-        currentPrice: updatedProduct.currentPrice,
-        targetPrice: user.targetPrice,  // Ensure targetPrice is passed
-      };
-      try {
-        const emailContent = await generateEmailBody(product, "TARGET_PRICE_MET");
-        console.log(`Sending threshold met email to: ${user.email}`);
-        await sendEmail(emailContent, [user.email]);
-        console.log("Threshold email sent successfully.");
-      } catch (thresholdEmailError) {
-        console.error(`Failed to send threshold email for user: ${user.email}`, thresholdEmailError);
-      }
-    } else {
-      console.log(`Target price not met for user: ${user.email}`);
-    }
-      }
+        // ======================== 4 Check for target price notifications
+        if (updatedProduct?.users) {
+          for (const user of updatedProduct.users as User[]) {
+            console.log(`Checking target price for user: ${user.email}`);
+            if (user.targetPrice && user.targetPrice > 0 && scrapedProduct.currentPrice <= user.targetPrice) {
+              console.log(`Target price met for user: ${user.email}, Product: ${updatedProduct.title}`);
+              const productInfo = {
+                title: updatedProduct.title,
+                url: updatedProduct.url,
+                currentPrice: updatedProduct.currentPrice,
+                targetPrice: user.targetPrice,  // Ensure targetPrice is passed
+              };
+              try {
+                const emailContent = await generateEmailBody(product, "TARGET_PRICE_MET");
+                console.log(`Sending threshold met email to: ${user.email}`);
+                await sendEmail(emailContent, [user.email]);
+                console.log("Threshold email sent successfully.");
+              } catch (thresholdEmailError) {
+                console.error(`Failed to send threshold email for user: ${user.email}`, thresholdEmailError);
+              }
+            } else {
+              console.log(`Target price not met for user: ${user.email}`);
+            }
+          }
         }
 
         return updatedProduct;
