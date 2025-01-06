@@ -16,6 +16,9 @@ interface PriceHistoryResponse {
   }[];
 }
 
+// Explicitly mark this API route as dynamic
+export const dynamic = "force-dynamic";
+
 // API handler for GET request
 export async function GET(request: Request) {
   try {
@@ -55,7 +58,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // Type the priceHistory array
+    // Format the priceHistory array
     const formattedPriceHistory: PriceHistoryResponse["priceHistory"] = priceHistory.map((entry: PriceHistoryItem) => ({
       price: entry.price,
       date: entry.date.toISOString(), // Convert date to string
