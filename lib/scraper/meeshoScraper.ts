@@ -62,12 +62,11 @@ export async function scrapeMeeshoProduct(url: string): Promise<ScrapedProduct |
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
       : 0;
 
-      // Calculate price history with only the current price
-      const priceHistory: PriceHistoryItem[] = [
-      { price: currentPrice, date: new Date().toISOString() }
-      ];
-      console.log("Constructed Price History:", priceHistory); // Log price history
-
+    // Calculate price history
+    const priceHistory: PriceHistoryItem[] = [
+      { price: currentPrice, date: new Date().toISOString() },
+      ...(originalPrice ? [{ price: originalPrice, date: new Date().toISOString() }] : []),
+    ];
 
     const lowestPrice = Math.min(...priceHistory.map((item) => item.price));
     const highestPrice = Math.max(...priceHistory.map((item) => item.price));

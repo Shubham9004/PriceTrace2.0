@@ -114,11 +114,12 @@ export async function scrapeAmazonProduct(url: string): Promise<ScrapedProduct |
     console.log("Validated Original Price:", validatedOriginalPrice); // Log validated original price
 
 
-    // Calculate price history with only current price
-    const priceHistory: PriceHistoryItem[] = [
-    { price: currentPrice, date: new Date().toISOString() },
-    ];
-    console.log("Constructed Price History:", priceHistory); // Log price history
+      // Calculate price history
+      const priceHistory: PriceHistoryItem[] = [
+      { price: currentPrice, date: new Date().toISOString() },
+      ...(validatedOriginalPrice ? [{ price: validatedOriginalPrice, date: new Date().toISOString() }] : []),
+      ];
+      console.log("Constructed Price History:", priceHistory); // Log price history
 
     // Determine price statistics
     const lowestPrice = Math.min(...priceHistory.map((item) => item.price));

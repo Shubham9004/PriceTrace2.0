@@ -114,11 +114,11 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
     const originalPrice = parseFloat(originalPriceText.replace(/[^\d.]/g, "")) || 0;
     const validatedOriginalPrice = originalPrice >= currentPrice ? originalPrice : 0;
 
-    // Create price history with only the current price
-    const priceHistory: PriceHistoryItem[] = [
-      { price: currentPrice, date: new Date().toISOString() }
-      ];
-      console.log("Constructed Price History:", priceHistory); // Log price history
+     // Calculate price history
+     const priceHistory: PriceHistoryItem[] = [
+      { price: currentPrice, date: new Date().toISOString() },
+      ...(validatedOriginalPrice ? [{ price: validatedOriginalPrice, date: new Date().toISOString() }] : []),
+    ];
 
       
     // Calculate price statistics
