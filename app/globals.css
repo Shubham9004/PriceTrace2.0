@@ -10,20 +10,8 @@
 }
 
 @layer base {
-  /* NProgress Styles */
-  #nprogress .bar {
-    @apply bg-black z-[1031];
-    height: 6px; /* Increase the height for a thicker bar */
-    width: 100% !important; /* Force the bar to be full-width */
-    background: black !important; /* Ensures no blue strip */
-  }
-
-  #nprogress .peg {
-    box-shadow: 0 0 10px black, 0 0 5px black !important;
-  }
-
-  #nprogress .spinner {
-    @apply hidden; /* Hides the spinner for a cleaner look */
+  body {
+    @apply font-inter;
   }
 }
 
