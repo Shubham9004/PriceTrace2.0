@@ -1,11 +1,13 @@
+"use server"
 import Searchbar from "@/components/Searchbar";
 import Image from "next/image";
 import { getAllProducts } from "@/lib/actions";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
 
-// Mark the page as dynamic
-export const dynamic = "force-dynamic"; // Forces dynamic rendering
+type HomeProps = {
+  allProducts: Product[]; // Define the type for the products
+};
 
 const Home = async () => {
   // Fetch all products dynamically
