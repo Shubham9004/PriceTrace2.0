@@ -1,56 +1,94 @@
 "use client";
 
 import { scrapeAndStoreProduct } from '@/lib/actions';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 
-// Validate Amazon, Flipkart, or Meesho product URLs
+// Utility function to validate URLs for specific domains (Amazon, Flipkart, Meesho)
 const isValidProductURL = (url: string) => {
   try {
     const parsedURL = new URL(url);
     const hostname = parsedURL.hostname;
-
-    // Check for Amazon, Flipkart, or Meesho domains
-    if (
-      hostname.includes('amazon.com') || 
-      hostname.includes('amazon.') || 
-      hostname.endsWith('amazon') ||
-      hostname.includes('flipkart.com') || 
-      hostname.includes('flipkart.') ||
-      hostname.includes('meesho.com') || 
-      hostname.includes('meesho.')
-    ) {
-      return true;
-    }
-  } catch (error) {
+    return (
+      hostname.includes('amazon') || hostname.includes('flipkart') || hostname.includes('meesho')
+    );
+  } catch {
     return false;
   }
-
-  return false;
 };
 
 const Searchbar = () => {
   const [searchPrompt, setSearchPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [placeholder, setPlaceholder] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+
+  const placeholderTexts = [
+    'Enter an Amazon link',
+    'Enter a Flipkart link',
+    'Enter a Meesho link',
+  ];
+
+  useEffect(() => {
+    let typingInterval: NodeJS.Timeout | null = null;
+
+    if (isTyping) {
+      let currentText = '';
+      let isDeleting = false;
+      let loopIndex = 0;
+      let charIndex = 0;
+
+      const typeEffect = () => {
+        const fullText = placeholderTexts[loopIndex % placeholderTexts.length];
+
+        if (!isDeleting) {
+          currentText = fullText.substring(0, charIndex + 1);
+          charIndex++;
+        } else {
+          currentText = fullText.substring(0, charIndex - 1);
+          charIndex--;
+        }
+
+        setPlaceholder(currentText);
+
+        if (!isDeleting && charIndex === fullText.length) {
+          setTimeout(() => (isDeleting = true), 1000);
+        } else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          loopIndex++;
+        }
+
+        typingInterval = setTimeout(typeEffect, isDeleting ? 75 : 150);
+      };
+
+      typeEffect();
+    }
+
+    return () => {
+      if (typingInterval) clearTimeout(typingInterval);
+    };
+  }, [isTyping]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const isValidLink = isValidProductURL(searchPrompt);
-
-    if (!isValidLink) {
-      return alert('Please provide a valid Amazon, Flipkart, or Meesho product link');
+    if (!isValidProductURL(searchPrompt)) {
+      alert('Please provide a valid Amazon, Flipkart, or Meesho product link');
+      return;
     }
 
     try {
       setIsLoading(true);
-
-      // Scrape the product page
       const product = await scrapeAndStoreProduct(searchPrompt);
-      console.log('Product scraped successfully:', product);
     } catch (error) {
       console.error('Error scraping product:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (!searchPrompt) {
+      setTimeout(() => setIsTyping(true), 200); // Restart animation with a slight delay for smoothness
     }
   };
 
@@ -60,8 +98,10 @@ const Searchbar = () => {
         type="text"
         value={searchPrompt}
         onChange={(e) => setSearchPrompt(e.target.value)}
-        placeholder="Enter Amazon, Flipkart, or Meesho product link"
+        placeholder={isTyping ? placeholder : ''}
         className="searchbar-input"
+        onFocus={() => setIsTyping(false)}
+        onBlur={handleBlur}
       />
 
       <button
