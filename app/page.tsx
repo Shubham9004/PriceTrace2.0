@@ -13,7 +13,7 @@ const Home = async () => {
 
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Section  */}
       <section className="px-8 md:px-24 py-28 bg-gray-50">
         <div className="flex flex-col items-center space-y-6 text-center max-w-lg mx-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
