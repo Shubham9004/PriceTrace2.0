@@ -13,9 +13,9 @@ const Home = async () => {
 
   return (
     <>
-      {/* Hero Section  */}
-      <section className="px-8 md:px-24 py-28 bg-gray-50">
-        <div className="flex flex-col items-center space-y-6 text-center max-w-lg mx-auto">
+      {/* Hero Section */}
+      <section className="px-8 md:px-24 py-16 bg-gray-50"> {/* Reduced padding */}
+        <div className="flex flex-col items-center space-y-4 text-center max-w-lg mx-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <p>Your Personal Price Guide</p>
             <Image
@@ -26,9 +26,8 @@ const Home = async () => {
             />
           </div>
 
-          <h1 className="text-4xl font-bold leading-snug text-gray-800">
-            Discover Deals with 
-            <span> Price</span> 
+          <h1 className="text-4xl font-bold leading-tight text-gray-800">
+            Discover Deals with <span>Price</span>
             <span className="text-primary">Trace</span>
           </h1>
 
@@ -37,20 +36,20 @@ const Home = async () => {
           </p>
 
           {/* Centered Searchbar */}
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center mt-4">
             <Searchbar />
           </div>
         </div>
       </section>
 
       {/* Trending Deals Section */}
-      <section className="px-8 md:px-24 py-20 bg-white">
-        <h2 className="text-3xl font-semibold text-center mb-10">
+      <section className="px-8 md:px-24 py-16 bg-white"> {/* Reduced py-20 to py-16 */}
+        <h2 className="text-3xl font-semibold text-center mb-8"> {/* Reduced mb-10 to mb-8 */}
           Trending <span className="text-[#0000FF]">Deals</span>
         </h2>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Reduced gap-8 to gap-6 */}
           {allProducts?.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
