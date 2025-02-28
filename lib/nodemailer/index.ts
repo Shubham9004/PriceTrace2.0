@@ -165,7 +165,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: 'contact@bscit.online',
+    user: 'alerts@pricetrace.tech',
     pass: process.env.EMAIL_PASSWORD, // Ensure EMAIL_PASSWORD is set in your environment
   },
   tls: {
@@ -178,7 +178,7 @@ const transporter = nodemailer.createTransport({
  */
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
-    from: 'contact@bscit.online',
+    from: 'alerts@pricetrace.tech',
     to: sendTo,
     html: emailContent.body,
     subject: emailContent.subject,

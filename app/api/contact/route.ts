@@ -7,7 +7,7 @@ const contactTransporter = nodemailer.createTransport({
   port: 587,
   secure: false, // Use TLS, not SSL
   auth: {
-    user: 'contact@bscit.online',
+    user: 'alerts@pricetrace.tech',
     pass: process.env.EMAIL_PASSWORD, // Ensure EMAIL_PASSWORD is set in your environment
   },
   tls: {
@@ -24,7 +24,7 @@ interface ContactEmailContent {
 // Rename the sendEmail function to contactSendMessageEmail
 async function contactSendMessageEmail(emailContent: ContactEmailContent, sendTo: string[]) {
   const mailOptions = {
-    from: 'contact@bscit.online', // Sender's email
+    from: 'alerts@pricetrace.tech', // Sender's email
     to: sendTo, // List of recipients
     subject: emailContent.subject, // Email subject
     html: emailContent.body, // HTML body content
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
   };
 
   // Send the email using the renamed function
-  const result = await contactSendMessageEmail(emailContent, ['contact@bscit.online']);
+  const result = await contactSendMessageEmail(emailContent, ['alerts@pricetrace.tech']);
 
   if (result.status === 'success') {
     return NextResponse.json(
