@@ -8,7 +8,7 @@ const TermsAndServices = () => {
 
       <p>
         Welcome to Pricetrace! These Terms and Services ("Terms") govern your access to and use of
-        our website pricetrace.com (the "Website"). By using our Website, you agree to be bound by
+        our website pricetrace.tech (the "Website"). By using our Website, you agree to be bound by
         these Terms. If you do not agree, please refrain from using our services.
       </p>
 
@@ -81,7 +81,7 @@ const TermsAndServices = () => {
         If you have any questions or concerns about these Terms, please contact us at:
       </p>
       <p>1 St Xavier Rd, Mumbai 400042, Maharashtra</p>
-      <p>Email: <a href="mailto:contact@pricetrace.com" className="text-primary underline">contact@pricetrace.com</a></p>
+      <p>Email: <a href="mailto:alerts@pricetrace.tech" className="text-primary underline">alerts@pricetrace.tech</a></p>
       <p>Phone: +91 9967640***</p>
 
       <p className="mt-8">Thank you for using Pricetrace. We value your trust and look forward to serving you.</p>

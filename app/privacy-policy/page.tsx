@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
       <p>
         <strong>Pricetrace</strong> ("we," "our," or "us") is committed to protecting your privacy. This
         Privacy Policy outlines how we collect, use, disclose, and safeguard your information when
-        you visit our website pricetrace.com (the "Website"). Please read this policy carefully to
+        you visit our website pricetrace.tech (the "Website"). Please read this policy carefully to
         understand our practices regarding your information.
       </p>
 
@@ -100,7 +100,7 @@ const PrivacyPolicy = () => {
         <li>Data portability.</li>
       </ul>
       <p>
-        To exercise these rights, please contact us at contact@pricetrace.com.
+        To exercise these rights, please contact us at alerts@pricetrace.tech.
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-4">9. Changes to This Privacy Policy</h2>
@@ -116,8 +116,8 @@ const PrivacyPolicy = () => {
         contact us at:
       </p>
       <p>1 St Xavier Rd, Mumbai 400042, Maharashtra</p>
-      <p>Email: <a href="mailto:contact@pricetrace.com" className="text-primary underline">contact@pricetrace.com</a></p>
-      <p>Phone: +91 9967640***</p>
+      <p>Email: <a href="alerts@pricetrace.tech" className="text-primary underline">alerts@pricetrace.tech</a></p>
+      <p>Phone: +91 9967640399</p>
 
       <p className="mt-8">Thank you for trusting us with your information.</p>
     </div>

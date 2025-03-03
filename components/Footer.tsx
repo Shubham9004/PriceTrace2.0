@@ -58,8 +58,8 @@ const Footer = () => {
               <span className="text-secondary">Contact</span> <span className="text-primary">Info</span>
             </h3>
             <p className="text-sm text-gray-600">1 St Xavier Rd, Mumbai 400042, Maharashtra </p>
-            <p className="text-sm text-gray-600">Email: contact@pricetrace.com</p>
-            <p className="text-sm text-gray-600">Phone: +91 9967640***</p>
+            <p className="text-sm text-gray-600">Email: contact@pricetrace.tech</p>
+            <p className="text-sm text-gray-600">Phone: +91 9967640399</p>
           </div>
 
           {/* Social Media Links Section */}
