@@ -21,5 +21,6 @@ export interface PriceHistoryItem {
     lowestPrice: number;
     highestPrice: number;
     averagePrice: number;
+    slug : string;
   }
   

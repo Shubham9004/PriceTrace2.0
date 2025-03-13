@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const productSchema = new mongoose.Schema(
   {
     url: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true }, // Added slug field
     currency: { type: String, required: true },
     image: { type: String, required: true },
     title: { type: String, required: true },
@@ -21,7 +22,7 @@ const productSchema = new mongoose.Schema(
     description: { type: String },
     category: { type: String },
     reviewsCount: { type: Number },
-    stars: { type: Number, required: false, default: 0 }, // Added stars field
+    stars: { type: Number, required: false, default: 0 },
     isOutOfStock: { type: Boolean, default: false },
     users: [
       {

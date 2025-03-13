@@ -4,6 +4,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import dotenv from "dotenv";
 import { ScrapedProduct, PriceHistoryItem } from "./productInterfaces"; // Import shared interfaces
+import slugify from "slugify";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ export async function scrapeMeeshoProduct(url: string): Promise<ScrapedProduct |
 
     // Extract product details
     const title = $("span.sc-eDvSVe.fhfLdV").text().trim();
+    const slug = slugify(title, { lower: true, strict: true }); // Generate slug from title
     const currentPriceText = $("h4.sc-eDvSVe.biMVPh").text().trim();
     const originalPriceText = $("p.ShippingInfo__ParagraphBody2StrikeThroughStyled-sc-frp12n-3")
       .text()
@@ -73,16 +75,17 @@ export async function scrapeMeeshoProduct(url: string): Promise<ScrapedProduct |
     const averagePrice =
       priceHistory.reduce((sum, item) => sum + item.price, 0) / priceHistory.length || 0;
 
- // Extract star rating and reviews count
- const starRatingText = $("span.sc-eDvSVe.laVOtN").text().trim(); // Star rating text (e.g., "4.0")
- const reviewsCountText = $("span.ShippingInfo__OverlineStyled-sc-frp12n-4").text().trim(); // Reviews count
+    // Extract star rating and reviews count
+    const starRatingText = $("span.sc-eDvSVe.laVOtN").text().trim(); // Star rating text (e.g., "4.0")
+    const reviewsCountText = $("span.ShippingInfo__OverlineStyled-sc-frp12n-4").text().trim(); // Reviews count
 
- const stars = parseFloat(starRatingText) || 0;
- const reviewsCount = parseInt(reviewsCountText.split(' ')[0], 10) || 0;
+    const stars = parseFloat(starRatingText) || 0;
+    const reviewsCount = parseInt(reviewsCountText.split(' ')[0], 10) || 0;
 
     // Construct final product data
     const productData: ScrapedProduct = {
       url,
+      slug,
       currency,
       image,
       title,

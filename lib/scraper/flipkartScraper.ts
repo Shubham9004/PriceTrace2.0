@@ -4,6 +4,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import dotenv from "dotenv";
 import { ScrapedProduct, PriceHistoryItem } from "./productInterfaces"; // Import the shared interfaces
+import slugify from "slugify";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ function sanitizeText(text: string): string {
  * @param url - The Flipkart product URL.
  * @returns A promise resolving to the scraped product data or null.
  */
+
 export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct | null> {
   if (!url) return null;
 
@@ -48,6 +50,7 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
 
     // Extract and sanitize product details
     const title = sanitizeText($("span.VU-ZEz").text());
+    const slug = slugify(title, { lower: true, strict: true }); // Generate slug from title
     const currentPriceText = sanitizeText($("div.Nx9bqj.CxhGGd").text());
     const originalPriceText = sanitizeText($("div.yRaY8j").first().text().replace(/₹|,/g, ""));
     const discountRateText = sanitizeText($("div.UkUFwK.WW8yVX span").text());
@@ -72,10 +75,7 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
     let image = "";
 
     if (imageElement.length > 0) {
-      // Use the `src` attribute
       image = imageElement.attr("src") || "";
-
-      // Check for higher resolution image in `srcset`
       const srcset = imageElement.attr("srcset");
       if (srcset) {
         const srcsetParts = srcset.split(",");
@@ -85,11 +85,9 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
         }
       }
     } else {
-      // Fallback to an alternative selector if no image is found
       imageElement = $("img.DByuf4.IZexXJ.jLEJ7H");
       if (imageElement.length > 0) {
         image = imageElement.attr("src") || "";
-
         const srcset = imageElement.attr("srcset");
         if (srcset) {
           const srcsetParts = srcset.split(",");
@@ -101,26 +99,18 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
       }
     }
 
-    // Log the image URL
-    if (image) {
-      console.log("Image URL:", image);
-    } else {
-      console.log("No image found");
-    }
-
     // Parse and validate numeric values
     const currency = "₹";
     const currentPrice = parseFloat(currentPriceText.replace(/[^\d.]/g, "")) || 0;
     const originalPrice = parseFloat(originalPriceText.replace(/[^\d.]/g, "")) || 0;
     const validatedOriginalPrice = originalPrice >= currentPrice ? originalPrice : 0;
 
-     // Calculate price history
-     const priceHistory: PriceHistoryItem[] = [
+    // Calculate price history
+    const priceHistory: PriceHistoryItem[] = [
       { price: currentPrice, date: new Date().toISOString() },
       ...(validatedOriginalPrice ? [{ price: validatedOriginalPrice, date: new Date().toISOString() }] : []),
     ];
 
-      
     // Calculate price statistics
     const lowestPrice = Math.min(...priceHistory.map((item) => item.price));
     const highestPrice = Math.max(...priceHistory.map((item) => item.price));
@@ -129,6 +119,7 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
     // Construct the final product data object
     const productData: ScrapedProduct = {
       url,
+      slug, // Include slug
       currency,
       image,
       title,
@@ -146,9 +137,7 @@ export async function scrapeFlipkartProduct(url: string): Promise<ScrapedProduct
       averagePrice,
     };
 
-    // Log the final scraped data for debugging
     console.log("Scraped Data:", productData);
-
     return productData;
   } catch (error) {
     console.error("Error occurred while scraping Flipkart:", error);

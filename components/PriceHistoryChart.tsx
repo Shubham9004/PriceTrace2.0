@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,7 +14,6 @@ import {
   Filler,
   ChartOptions,
 } from "chart.js";
-import { useEffect, useState, useCallback } from "react";
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, Filler);
 
@@ -22,17 +22,11 @@ type PriceHistoryItem = {
   date: string;
 };
 
-type Product = {
-  title: string;
-  url: string;
-};
-
 type Props = {
   productId: string;
-  product?: Product;
 };
 
-const PriceHistoryChart = ({ productId, product }: Props) => {
+const PriceHistoryChart = ({ productId }: Props) => {
   const [priceHistory, setPriceHistory] = useState<PriceHistoryItem[]>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -43,7 +37,7 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
 
   const calculateStartDate = (range: "1D" | "1M" | "1Y" | "ALL") => {
     const today = new Date();
-    let start;
+    let start: Date | null = null;
 
     switch (range) {
       case "1D":
@@ -59,7 +53,6 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
         start.setFullYear(today.getFullYear() - 1);
         break;
       case "ALL":
-      default:
         start = null;
         break;
     }
@@ -70,28 +63,17 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
   const fetchPriceHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
-    // Debugging: Check the start and end date before fetching
-    console.log(`Fetching data from ${startDate} to ${endDate}`);
 
     try {
-      const response = await fetch(`/api/chart?productId=${productId}&startDate=${startDate}&endDate=${endDate}`);
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+      const response = await fetch(`/api/chart?slug=${productId}&startDate=${startDate}&endDate=${endDate}`);
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
       const data = await response.json();
       setPriceHistory(data.priceHistory || []);
 
-      // Calculate the highest and lowest prices from the fetched data
       const prices = data.priceHistory.map((item: PriceHistoryItem) => item.price);
-      if (prices.length > 0) {
-        setHighestPrice(Math.max(...prices));
-        setLowestPrice(Math.min(...prices));
-      } else {
-        setHighestPrice(null);
-        setLowestPrice(null);
-      }
+      setHighestPrice(prices.length > 0 ? Math.max(...prices) : null);
+      setLowestPrice(prices.length > 0 ? Math.min(...prices) : null);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -104,8 +86,7 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
   }, [fetchPriceHistory]);
 
   const handleDateRangeChange = (range: "1D" | "1M" | "1Y" | "ALL") => {
-    const calculatedStartDate = calculateStartDate(range);
-    setStartDate(calculatedStartDate);
+    setStartDate(calculateStartDate(range));
     setEndDate(new Date().toISOString().slice(0, 10));
     fetchPriceHistory();
   };
@@ -115,8 +96,8 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
     datasets: [
       {
         data: priceHistory.map((item) => item.price),
-        borderColor: "rgba(40, 41, 41, 255)", 
-        backgroundColor: "rgba(195, 204, 219)",  
+        borderColor: "rgba(40, 41, 41, 1)", 
+        backgroundColor: "rgba(195, 204, 219, 0.5)", 
         fill: true,
         tension: 0.3,
         pointRadius: 4,
@@ -129,80 +110,40 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false, 
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context) => {
-            const value = context.raw as number;
-            return `₹${value.toFixed(2)}`;
-          },
+          label: (context) => `₹${(context.raw as number).toFixed(2)}`,
         },
       },
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: "Date",
-          font: {
-            size: 16,
-            weight: "bold",
-          },
-        },
-        grid: {
-          display: true,
-          color: "rgba(0,0,0,0.1)",
-        },
+        title: { display: true, text: "Date", font: { size: 16, weight: "bold" } },
+        grid: { color: "rgba(0,0,0,0.1)" },
       },
       y: {
-        title: {
-          display: true,
-          text: "Price (₹)",
-          font: {
-            size: 16,
-            weight: "bold",
-          },
-        },
-        grid: {
-          display: true,
-          color: "rgba(0,0,0,0.1)",
-        },
+        title: { display: true, text: "Price (₹)", font: { size: 16, weight: "bold" } },
+        grid: { color: "rgba(0,0,0,0.1)" },
       },
     },
   };
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="date-range-buttons flex gap-2 justify-center my-4">
-        <button
-          className="bg-black text-white py-2 px-4 rounded hover:opacity-80"
-          onClick={() => handleDateRangeChange("1D")}
-        >
-          1 Day
-        </button>
-        <button
-          className="bg-black text-white py-2 px-4 rounded hover:opacity-80"
-          onClick={() => handleDateRangeChange("1M")}
-        >
-          1 Month
-        </button>
-        <button
-          className="bg-black text-white py-2 px-4 rounded hover:opacity-80"
-          onClick={() => handleDateRangeChange("1Y")}
-        >
-          1 Year
-        </button>
-        <button
-          className="bg-black text-white py-2 px-4 rounded hover:opacity-80"
-          onClick={() => handleDateRangeChange("ALL")}
-        >
-          All
-        </button>
+      <div className="flex gap-2 justify-center my-4">
+        {["1D", "1M", "1Y", "ALL"].map((range) => (
+          <button
+            key={range}
+            className="bg-black text-white py-2 px-4 rounded hover:opacity-80"
+            onClick={() => handleDateRangeChange(range as "1D" | "1M" | "1Y" | "ALL")}
+          >
+            {range === "1D" ? "1 Day" : range === "1M" ? "1 Month" : range === "1Y" ? "1 Year" : "All"}
+          </button>
+        ))}
       </div>
 
-      {error && <p className="error-message text-center text-red-500">{error}</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       {isLoading ? (
         <p className="text-center">Loading chart...</p>
@@ -215,7 +156,7 @@ const PriceHistoryChart = ({ productId, product }: Props) => {
       )}
 
       {highestPrice !== null && lowestPrice !== null && (
-        <div className="price-info text-center mt-4">
+        <div className="text-center mt-4">
           <p><strong>Highest Price:</strong> ₹{highestPrice.toFixed(2)}</p>
           <p><strong>Lowest Price:</strong> ₹{lowestPrice.toFixed(2)}</p>
         </div>

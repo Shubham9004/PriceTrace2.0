@@ -1,15 +1,17 @@
 "use client";
 
-import { scrapeAndStoreProduct } from '@/lib/actions';
-import { FormEvent, useState, useEffect } from 'react';
+import { scrapeAndStoreProduct } from "@/lib/actions";
+import { FormEvent, useState, useEffect } from "react";
 
-// Utility function to validate URLs for specific domains (Amazon, Flipkart, Meesho)
+// Utility function to validate URLs for supported platforms
 const isValidProductURL = (url: string) => {
   try {
     const parsedURL = new URL(url);
-    const hostname = parsedURL.hostname;
+    const hostname = parsedURL.hostname.replace("www.", ""); // Normalize URL
     return (
-      hostname.includes('amazon') || hostname.includes('flipkart') || hostname.includes('meesho')
+      hostname.includes("amazon.") ||
+      hostname.includes("flipkart.") ||
+      hostname.includes("meesho.")
     );
   } catch {
     return false;
@@ -17,22 +19,21 @@ const isValidProductURL = (url: string) => {
 };
 
 const Searchbar = () => {
-  const [searchPrompt, setSearchPrompt] = useState('');
+  const [searchPrompt, setSearchPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [placeholder, setPlaceholder] = useState('');
+  const [placeholder, setPlaceholder] = useState("");
   const [isTyping, setIsTyping] = useState(true);
 
   const placeholderTexts = [
-    'Enter an Amazon link',
-    'Enter a Flipkart link',
-    'Enter a Meesho link',
+    "Enter an Amazon link",
+    "Enter a Flipkart link",
+    "Enter a Meesho link",
   ];
 
   useEffect(() => {
     let typingInterval: NodeJS.Timeout | null = null;
-
     if (isTyping) {
-      let currentText = '';
+      let currentText = "";
       let isDeleting = false;
       let loopIndex = 0;
       let charIndex = 0;
@@ -72,15 +73,16 @@ const Searchbar = () => {
     event.preventDefault();
 
     if (!isValidProductURL(searchPrompt)) {
-      alert('Please provide a valid Amazon, Flipkart, or Meesho product link');
+      alert("Please provide a valid Amazon, Flipkart, or Meesho product link");
       return;
     }
 
     try {
       setIsLoading(true);
-      const product = await scrapeAndStoreProduct(searchPrompt);
+      console.log("Sending URL to scrapeAndStoreProduct:", searchPrompt);
+      await scrapeAndStoreProduct(searchPrompt); // ✅ Send full URL
     } catch (error) {
-      console.error('Error scraping product:', error);
+      console.error("Error scraping product:", error);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +90,7 @@ const Searchbar = () => {
 
   const handleBlur = () => {
     if (!searchPrompt) {
-      setTimeout(() => setIsTyping(true), 200); // Restart animation with a slight delay for smoothness
+      setTimeout(() => setIsTyping(true), 200); // Restart animation with a slight delay
     }
   };
 
@@ -98,7 +100,7 @@ const Searchbar = () => {
         type="text"
         value={searchPrompt}
         onChange={(e) => setSearchPrompt(e.target.value)}
-        placeholder={isTyping ? placeholder : ''}
+        placeholder={isTyping ? placeholder : ""}
         className="searchbar-input"
         onFocus={() => setIsTyping(false)}
         onBlur={handleBlur}
@@ -107,9 +109,9 @@ const Searchbar = () => {
       <button
         type="submit"
         className="searchbar-btn"
-        disabled={searchPrompt === ''}
+        disabled={searchPrompt === ""}
       >
-        {isLoading ? 'Searching...' : 'Search'}
+        {isLoading ? "Searching..." : "Search"}
       </button>
     </form>
   );

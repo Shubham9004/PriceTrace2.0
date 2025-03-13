@@ -8,55 +8,64 @@ import { Product } from "@/types";
 export const dynamic = "force-dynamic"; // Forces dynamic rendering
 
 const Home = async () => {
-  // Fetch all products dynamically
-  const allProducts = await getAllProducts();
+  try {
+    // Fetch all products dynamically
+    const allProducts: Product[] = await getAllProducts();
 
-  return (
-    <>
-      {/* Hero Section */}
-      <section className="px-8 md:px-24 py-16 bg-gray-50"> {/* Reduced padding */}
-        <div className="flex flex-col items-center space-y-4 text-center max-w-lg mx-auto">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <p>Your Personal Price Guide</p>
-            <Image
-              src="/assets/icons/arrow-right.svg"
-              alt="arrow pointing right"
-              width={16}
-              height={16}
-            />
+    return (
+      <>
+        {/* Hero Section */}
+        <section className="px-8 md:px-24 py-16 bg-gray-50">
+          <div className="flex flex-col items-center space-y-4 text-center max-w-lg mx-auto">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <p>Your Personal Price Guide</p>
+              <Image
+                src="/assets/icons/arrow-right.svg"
+                alt="Arrow pointing right"
+                width={16}
+                height={16}
+              />
+            </div>
+
+            <h1 className="text-4xl font-bold leading-tight text-gray-800">
+              Discover Deals with <span>Price</span>
+              <span className="text-primary">Trace</span>
+            </h1>
+
+            <p className="text-gray-600 text-lg">
+              Unlock Savings with Real-Time Price Tracking and Tailored Shopping Insights.
+            </p>
+
+            {/* Centered Searchbar */}
+            <div className="w-full flex justify-center mt-4">
+              <Searchbar />
+            </div>
           </div>
+        </section>
 
-          <h1 className="text-4xl font-bold leading-tight text-gray-800">
-            Discover Deals with <span>Price</span>
-            <span className="text-primary">Trace</span>
-          </h1>
+        {/* Trending Deals Section */}
+        <section className="px-8 md:px-24 py-16 bg-white">
+          <h2 className="text-3xl font-semibold text-center mb-8">
+            Trending <span className="text-[#0000FF]">Deals</span>
+          </h2>
 
-          <p className="text-gray-600 text-lg">
-            Unlock Savings with Real-Time Price Tracking and Tailored Shopping Insights.
-          </p>
-
-          {/* Centered Searchbar */}
-          <div className="w-full flex justify-center mt-4">
-            <Searchbar />
-          </div>
-        </div>
-      </section>
-
-      {/* Trending Deals Section */}
-      <section className="px-8 md:px-24 py-16 bg-white"> {/* Reduced py-20 to py-16 */}
-        <h2 className="text-3xl font-semibold text-center mb-8"> {/* Reduced mb-10 to mb-8 */}
-          Trending <span className="text-[#0000FF]">Deals</span>
-        </h2>
-
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Reduced gap-8 to gap-6 */}
-          {allProducts?.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
-      </section>
-    </>
-  );
+          {/* Products Grid */}
+          {allProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allProducts.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-600">No products available.</p>
+          )}
+        </section>
+      </>
+    );
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return <p className="text-center text-red-500">Failed to load products. Please try again later.</p>;
+  }
 };
 
 export default Home;
