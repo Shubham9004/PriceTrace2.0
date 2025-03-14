@@ -67,22 +67,28 @@ const Home = async () => {
             Trending <span className="text-[#0000FF]">Deals</span>
           </h2>
 
-          {/* Products Grid */}
-          {allProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-600">No products available.</p>
-          )}
+          {/* Ensure consistent layout even if no products exist */}
+          <div className="min-h-[200px] flex flex-col items-center">
+            {allProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                {allProducts.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-600">No products available.</p>
+            )}
+          </div>
         </section>
       </>
     );
   } catch (error) {
     console.error("Error fetching products:", error);
-    return <p className="text-center text-red-500">Failed to load products. Please try again later.</p>;
+    return (
+      <p className="text-center text-red-500 mt-10">
+        Failed to load products. Please try again later.
+      </p>
+    );
   }
 };
 
