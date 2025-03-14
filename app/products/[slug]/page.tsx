@@ -15,6 +15,32 @@ type Props = {
   params: { slug: string };
 };
 
+// Currency mapping for ISO 4217 codes
+const currencyMap: Record<string, string> = {
+  "$": "USD",
+  "€": "EUR",
+  "£": "GBP",
+  "₹": "INR",
+  "¥": "JPY",
+  "₩": "KRW",
+  "₽": "RUB",
+  "₺": "TRY",
+  "₫": "VND",
+  "₴": "UAH",
+  "₦": "NGN",
+  "R$": "BRL",
+  "C$": "CAD",
+  "A$": "AUD",
+  "S$": "SGD",
+  "HK$": "HKD",
+};
+
+// Helper function to get currency code
+const getCurrencyCode = (symbol: string): string => {
+  return currencyMap[symbol] || "USD"; // Default to USD if not found
+};
+
+// Generate SEO metadata
 export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
   const product = await getProductBySlug(slug);
 
@@ -39,19 +65,13 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
     };
   }
 
-  // 🔥 Auto-generate SEO Keywords from Title & Description
+  // Auto-generate SEO keywords from title & description
   const generateKeywords = (title: string, description: string): string => {
-    // Merge title & description, then split into words
     const words = `${title} ${description}`.toLowerCase().split(/\s+/);
-
-    // Remove common stopwords
     const stopwords = new Set([
       "the", "is", "and", "or", "of", "for", "to", "in", "on", "with", "a", "an", "this", "that", "it", "by", "at", "from", "as", "be", "are", "was", "were", "has", "had", "have"
     ]);
-
-    // Filter meaningful words & remove duplicates
     const uniqueKeywords = [...new Set(words.filter(word => !stopwords.has(word) && word.length > 2))];
-
     return uniqueKeywords.slice(0, 15).join(", "); // Limit to top 15 keywords
   };
 
@@ -60,7 +80,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   return {
     title: `${product.title} | Best Price & Deals`,
     description: `Find the best price for ${product.title}. Compare offers, check price history, and get alerts on discounts & deals.`,
-    keywords, // 🔥 Auto-generated SEO keywords
+    keywords,
     alternates: { canonical: `https://pricetrace.tech/products/${slug}` },
     openGraph: {
       title: product.title,
@@ -87,7 +107,10 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
 
   const similarProducts: Product[] = (await getSimilarProducts(slug)) ?? [];
 
-  // Generate JSON-LD structured data for the main product
+  // Get currency code
+  const priceCurrency = getCurrencyCode(product.currency);
+
+  // Generate JSON-LD structured data for price tracking
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -95,10 +118,18 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
     image: product.image,
     description: product.description,
     offers: {
-      "@type": "Offer",
-      price: product.currentPrice,
-      priceCurrency: product.currency,
-      availability: "https://schema.org/InStock",
+      "@type": "AggregateOffer",
+      priceCurrency: priceCurrency,
+      lowPrice: product.lowestPrice, // Lowest historical price
+      highPrice: product.highestPrice, // Highest historical price
+      offerCount: 1, // Number of offers (1 for price tracking)
+      offers: [
+        {
+          "@type": "Offer",
+          price: product.currentPrice, // Current price
+          availability: "https://schema.org/InStock",
+        },
+      ],
     },
     aggregateRating: {
       "@type": "AggregateRating",
@@ -109,10 +140,10 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
 
   return (
     <main className="product-container">
-      {/* Add JSON-LD structured data */}
+      {/* Inject JSON-LD structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema, null, 2) }}
       />
 
       <div className="flex gap-28 xl:flex-row flex-col">
@@ -259,29 +290,27 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
           </div>
         </div>
 
-        <Link 
-  href={product.url} 
-  target="_blank"
-  className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px]" 
-  aria-label="Buy Now"
->
-  <Image src="/assets/icons/bag.svg" alt="check" width={22} height={22} />
-  <span className="text-base text-white">Buy Now</span>
-</Link>
-
+        <Link
+          href={product.url}
+          target="_blank"
+          className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px]"
+          aria-label="Buy Now"
+        >
+          <Image src="/assets/icons/bag.svg" alt="check" width={22} height={22} />
+          <span className="text-base text-white">Buy Now</span>
+        </Link>
       </div>
 
       {similarProducts && similarProducts.length > 0 && (
-  <section className="py-14 flex flex-col gap-2 w-full">
-    <h2 className="section-text">Similar Products</h2>
-    <div className="flex flex-wrap gap-10 mt-7 w-full">
-      {similarProducts.map((product: Product) => (
-        <ProductCard key={product._id} product={product} />
-      ))}
-    </div>
-  </section>
-)}
-
+        <section className="py-14 flex flex-col gap-2 w-full">
+          <h2 className="section-text">Similar Products</h2>
+          <div className="flex flex-wrap gap-10 mt-7 w-full">
+            {similarProducts.map((product: Product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 };
