@@ -46,7 +46,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
 
   if (!product) {
     return {
-      title: "Product No Longer Available | Price Tracker",
+      title: "This Product is No Longer Available | Price Tracker",
       description: "The product you are looking for is no longer available. Discover similar products and track their prices.",
       alternates: { canonical: "https://yourwebsite.com/products" },
       robots: "noindex, follow",
@@ -78,19 +78,19 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   const keywords = generateKeywords(product.title, product.description);
 
   return {
-    title: `${product.title} | Price Tracker - Best Deals & Price History`,
-    description: `Track the price history of ${product.title} and find the best deals. Compare prices, set alerts, and save money with Price Tracker.`,
+    title: `${product.title} | Best Price & Deals`,
+    description: `Find the best price for ${product.title}. Compare offers, check price history, and get alerts on discounts & deals.`,
     keywords,
     alternates: { canonical: `https://pricetrace.tech/products/${slug}` },
     openGraph: {
-      title: `${product.title} | Price Tracker`,
-      description: `Track the price history of ${product.title} and get alerts for price drops. Compare prices and save money.`,
+      title: product.title,
+      description: `Track the price history of ${product.title}. Get price alerts now!`,
       url: `https://pricetrace.tech/products/${slug}`,
       images: [{ url: product.image, width: 800, height: 600, alt: product.title }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.title} | Price Tracker`,
+      title: product.title,
       description: `Track ${product.title} price history and get alerts for price drops!`,
       images: [product.image],
     },
@@ -146,9 +146,6 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema, null, 2) }}
       />
 
-      {/* H1 Heading */}
-      <h1 className="text-4xl font-bold text-secondary mb-6">{product.title}</h1>
-
       <div className="flex gap-28 xl:flex-row flex-col">
         {/* Product Image */}
         <div className="product-image">
@@ -164,10 +161,13 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
         <div className="flex-1 flex flex-col">
           <div className="flex justify-between items-start gap-5 flex-wrap pb-6">
             <div className="flex flex-col gap-3">
+              <p className="text-[28px] text-secondary font-semibold">
+                {product.title}
+              </p>
               <Link
                 href={product.url}
                 target="_blank"
-                className="text-base text-black opacity-50 hover:underline"
+                className="text-base text-black opacity-50"
                 aria-label={`Visit ${product.title} product page`}
               >
                 Visit Product
@@ -276,17 +276,17 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
 
       {/* Price History Chart */}
       <div className="chart-container my-10">
-        <h2 className="text-2xl text-secondary font-semibold mb-4">Price History</h2>
+        <h3 className="text-2xl text-secondary font-semibold">Price History</h3>
         <PriceHistoryChart productId={slug} />
       </div>
 
       <div className="flex flex-col gap-16">
         <div className="flex flex-col gap-5">
-          <h2 className="text-2xl text-secondary font-semibold">Product Description</h2>
+          <h3 className="text-2xl text-secondary font-semibold">
+            Product Description
+          </h3>
           <div className="flex flex-col gap-4">
-            {product?.description?.split("\n").map((line, index) => (
-              <p key={index}>{line}</p>
-            ))}
+            {product?.description?.split("\n")}
           </div>
         </div>
 
