@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
@@ -47,7 +47,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={inter.className}>
-        <LayoutContent>{children}</LayoutContent>
+        {/* Wrap LayoutContent in Suspense */}
+        <Suspense fallback={<div>Loading...</div>}>
+          <LayoutContent>{children}</LayoutContent>
+        </Suspense>
       </body>
     </html>
   );
@@ -58,7 +61,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Ensure window.gtag is available before calling it
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", "page_view", {
         page_path: pathname,
