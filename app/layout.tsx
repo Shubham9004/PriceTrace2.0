@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
@@ -47,9 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={inter.className}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <LayoutContent>{children}</LayoutContent>
-        </Suspense>
+        <LayoutContent>{children}</LayoutContent>
       </body>
     </html>
   );
