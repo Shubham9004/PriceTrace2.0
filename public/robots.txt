@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-
-# Block API endpoints and sensitive pages
-Disallow: /api/
-Disallow: /admin/
-Disallow: /login/
-
-Sitemap: https://www.pricetrace.tech/sitemap.xml
