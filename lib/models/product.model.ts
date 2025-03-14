@@ -28,6 +28,7 @@ const productSchema = new mongoose.Schema(
       {
         email: { type: String, required: true },
         targetPrice: { type: Number, required: false }, // Optional targetPrice field
+        notified: { type: Boolean, default: false }, // Add notified field with default value false
       },
     ],
   },

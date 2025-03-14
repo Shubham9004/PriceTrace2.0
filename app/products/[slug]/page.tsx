@@ -2,7 +2,7 @@ import Modal from "@/components/Modal";
 import PriceInfoCard from "@/components/PriceInfoCard";
 import ProductCard from "@/components/ProductCard";
 import ShareButton from "@/components/ShareButton";
-import { getProductBySlug, getSimilarProducts } from "@/lib/actions"; // Fixed import
+import { getProductBySlug, getSimilarProducts } from "@/lib/actions";
 import { formatNumber } from "@/lib/utils";
 import { Product } from "@/types";
 import Image from "next/image";
@@ -11,11 +11,9 @@ import { redirect } from "next/navigation";
 import PriceHistoryChart from "@/components/PriceHistoryChart";
 import { Metadata } from "next";
 
-
 type Props = {
   params: { slug: string };
 };
-
 
 export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
   const product = await getProductBySlug(slug);
@@ -25,7 +23,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
       title: "This Product is No Longer Available | Price Tracker",
       description: "The product you are looking for is no longer available. Discover similar products and track their prices.",
       alternates: { canonical: "https://yourwebsite.com/products" },
-      robots: "noindex, follow", // Prevents indexing but allows crawling of similar products
+      robots: "noindex, follow",
       openGraph: {
         title: "Product No Longer Available",
         description: "Check out other trending products with price tracking and alerts.",
@@ -41,14 +39,33 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
     };
   }
 
+  // 🔥 Auto-generate SEO Keywords from Title & Description
+  const generateKeywords = (title: string, description: string): string => {
+    // Merge title & description, then split into words
+    const words = `${title} ${description}`.toLowerCase().split(/\s+/);
+
+    // Remove common stopwords
+    const stopwords = new Set([
+      "the", "is", "and", "or", "of", "for", "to", "in", "on", "with", "a", "an", "this", "that", "it", "by", "at", "from", "as", "be", "are", "was", "were", "has", "had", "have"
+    ]);
+
+    // Filter meaningful words & remove duplicates
+    const uniqueKeywords = [...new Set(words.filter(word => !stopwords.has(word) && word.length > 2))];
+
+    return uniqueKeywords.slice(0, 15).join(", "); // Limit to top 15 keywords
+  };
+
+  const keywords = generateKeywords(product.title, product.description);
+
   return {
-    title: `${product.title} | Best Price & Alerts`,
-    description: `Track the price history of ${product.title}. Current price: ${product.currency} ${product.currentPrice}. Get price drop alerts now!`,
-    alternates: { canonical: `https://yourwebsite.com/products/${slug}` },
+    title: `${product.title} | Best Price & Deals`,
+    description: `Find the best price for ${product.title}. Compare offers, check price history, and get alerts on discounts & deals.`,
+    keywords, // 🔥 Auto-generated SEO keywords
+    alternates: { canonical: `https://pricetrace.tech/products/${slug}` },
     openGraph: {
       title: product.title,
       description: `Track the price history of ${product.title}. Get price alerts now!`,
-      url: `https://yourwebsite.com/products/${slug}`,
+      url: `https://pricetrace.tech/products/${slug}`,
       images: [{ url: product.image, width: 800, height: 600, alt: product.title }],
     },
     twitter: {
@@ -60,22 +77,44 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   };
 }
 
-
 const ProductDetails = async ({ params: { slug } }: Props) => {
   const product: Product | null = await getProductBySlug(slug);
-
 
   if (!product) {
     redirect("/");
     return null;
   }
 
-
   const similarProducts: Product[] = (await getSimilarProducts(slug)) ?? [];
 
+  // Generate JSON-LD structured data for the main product
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    image: product.image,
+    description: product.description,
+    offers: {
+      "@type": "Offer",
+      price: product.currentPrice,
+      priceCurrency: product.currency,
+      availability: "https://schema.org/InStock",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: product.stars,
+      reviewCount: product.reviewsCount,
+    },
+  };
 
   return (
-    <div className="product-container">
+    <main className="product-container">
+      {/* Add JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+
       <div className="flex gap-28 xl:flex-row flex-col">
         {/* Product Image */}
         <div className="product-image">
@@ -88,7 +127,6 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
           />
         </div>
 
-
         <div className="flex-1 flex flex-col">
           <div className="flex justify-between items-start gap-5 flex-wrap pb-6">
             <div className="flex flex-col gap-3">
@@ -99,11 +137,11 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
                 href={product.url}
                 target="_blank"
                 className="text-base text-black opacity-50"
+                aria-label={`Visit ${product.title} product page`}
               >
                 Visit Product
               </Link>
             </div>
-
 
             <div className="flex items-center gap-3">
               <div className="product-hearts">
@@ -118,10 +156,8 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
                 </p>
               </div>
 
-
               {/* Share Button */}
               <ShareButton title={product.title} url={product.url} />
-
 
               <div className="p-2 bg-white-200 rounded-10">
                 <Image
@@ -134,7 +170,6 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
             </div>
           </div>
 
-
           <div className="product-info">
             <div className="flex flex-col gap-2">
               <p className="text-[34px] text-secondary font-bold">
@@ -144,7 +179,6 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
                 {product.currency} {formatNumber(product.originalPrice)}
               </p>
             </div>
-
 
             <div className="flex flex-col gap-4">
               <div className="flex gap-3">
@@ -160,7 +194,6 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
                   </p>
                 </div>
 
-
                 <div className="product-reviews">
                   <Image
                     src="/assets/icons/comment.svg"
@@ -174,14 +207,12 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
                 </div>
               </div>
 
-
               <p className="text-sm text-black opacity-50">
                 <span className="text-primary-green font-semibold">93% </span> of
                 buyers have recommended this.
               </p>
             </div>
           </div>
-
 
           <div className="my-7 flex flex-col gap-5">
             <div className="flex gap-5 flex-wrap">
@@ -208,18 +239,15 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
             </div>
           </div>
 
-
           <Modal productId={slug} />
         </div>
       </div>
 
-
-      {/* Price History Chart in its own container */}
+      {/* Price History Chart */}
       <div className="chart-container my-10">
         <h3 className="text-2xl text-secondary font-semibold">Price History</h3>
         <PriceHistoryChart productId={slug} />
       </div>
-
 
       <div className="flex flex-col gap-16">
         <div className="flex flex-col gap-5">
@@ -231,34 +259,34 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
           </div>
         </div>
 
-
-        <button className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px]">
-          <Image
-            src="/assets/icons/bag.svg"
-            alt="check"
-            width={22}
-            height={22}
-          />
-          <Link href="/" className="text-base text-white">
-            Buy Now
-          </Link>
-        </button>
+        <Link 
+  href="/" 
+  className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px]" 
+  aria-label="Buy Now"
+>
+  <Image src="/assets/icons/bag.svg" alt="check" width={22} height={22} />
+  <span className="text-base text-white">Buy Now</span>
+</Link>
       </div>
 
-
       {similarProducts && similarProducts.length > 0 && (
-        <div className="py-14 flex flex-col gap-2 w-full">
-          <p className="section-text">Similar Products</p>
+        <section className="py-14 flex flex-col gap-2 w-full">
+          <h2 className="section-text">Similar Products</h2>
           <div className="flex flex-wrap gap-10 mt-7 w-full">
             {similarProducts.map((product: Product) => (
-              <ProductCard key={product._id} product={product} />
+              <Link
+                key={product._id}
+                href={`/products/${product.slug}`}
+                aria-label={`View ${product.title}`}
+              >
+                <ProductCard product={product} />
+              </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 };
-
 
 export default ProductDetails;

@@ -5,6 +5,7 @@ export type PriceHistoryItem = {
 export type User = {
   email: string;
   targetPrice?: number; // Optional target price for the user
+  notified?: boolean; // Optional property
 };
 
 export type Product = {
