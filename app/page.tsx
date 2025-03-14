@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getAllProducts } from "@/lib/actions";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
+import Head from "next/head";
 
 // Mark the page as dynamic
 export const dynamic = "force-dynamic"; // Forces dynamic rendering
@@ -14,6 +15,23 @@ const Home = async () => {
 
     return (
       <>
+        {/* SEO Metadata */}
+        <Head>
+          <title>PriceTrace - Track Product Prices & Save Money</title>
+          <meta name="description" content="Track product prices effortlessly and save money on your online shopping. Find the best deals and price history on PriceTrace." />
+          <meta name="keywords" content="Pricetrace, keepa amazon price tracker, online product price tracker, amazon price history tracker, amazon product price history, amazon product price tracker" />
+          <meta name="author" content="PriceTrace Team" />
+          <meta property="og:title" content="PriceTrace - Track Product Prices & Save Money" />
+          <meta property="og:description" content="Track product prices effortlessly and save money on your online shopping." />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://www.pricetrace.com" />
+          <meta property="og:image" content="/assets/images/seo-image.png" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="PriceTrace - Track Product Prices & Save Money" />
+          <meta name="twitter:description" content="Track product prices effortlessly and save money on your online shopping." />
+          <meta name="twitter:image" content="/assets/images/seo-image.png" />
+        </Head>
+
         {/* Hero Section */}
         <section className="px-8 md:px-24 py-16 bg-gray-50">
           <div className="flex flex-col items-center space-y-4 text-center max-w-lg mx-auto">

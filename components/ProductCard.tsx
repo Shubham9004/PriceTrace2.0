@@ -9,19 +9,23 @@ interface Props {
 
 const ProductCard = ({ product }: Props) => {
   return (
-    <Link href={`/products/${product.slug}`} className="product-card">
-      <div className="product-card_img-container">
-        <Image 
-          src={product.image}
-          alt={product.title}
-          width={200}
-          height={200}
-          className="product-card_img"
-        />
-      </div>
+    <div className="product-card">
+      <Link href={`/products/${product.slug}`} className="block">
+        <div className="product-card_img-container">
+          <Image 
+            src={product.image}
+            alt={product.title}
+            width={200}
+            height={200}
+            className="product-card_img"
+          />
+        </div>
+      </Link>
 
       <div className="flex flex-col gap-3">
-        <h3 className="product-title">{product.title}</h3>
+        <Link href={`/products/${product.slug}`} className="block">
+          <h3 className="product-title">{product.title}</h3>
+        </Link>
 
         <div className="flex justify-between">
           <p className="text-black opacity-50 text-lg capitalize">
@@ -34,8 +38,8 @@ const ProductCard = ({ product }: Props) => {
           </p>
         </div>
       </div>
-    </Link>
+    </div>
   );
-}
+};
 
 export default ProductCard;

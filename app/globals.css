@@ -149,5 +149,27 @@
   .searchbar-btn {
     @apply bg-gray-900 border border-gray-900 rounded-lg shadow-xs px-6 py-4 text-white text-lg font-semibold hover:opacity-90 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40;
   }
-  
+}
+
+/* Move NProgress styles OUTSIDE of @layer */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: black !important; /* Ensure the bar is black */
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px black, 0 0 5px black; /* Removed !important */
+}
+
+#nprogress .spinner {
+  display: none !important; /* Hide the spinner */
+}
+
+#nprogress .spinner-icon {
+  border-top-color: black !important;
+  border-left-color: black !important;
 }

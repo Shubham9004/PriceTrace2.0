@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Head from 'next/head';
 import Image from 'next/image';
 import { toast } from 'react-toastify'; // Assuming you're using react-toastify for notifications
 
@@ -54,99 +55,117 @@ const ContactUs = () => {
   };
 
   return (
-    <section className="px-8 md:px-24 py-28 bg-gray-50">
-      <div className="flex flex-col items-center space-y-8 text-center max-w-2xl mx-auto">
+    <>
+      {/* SEO Metadata */}
+      <Head>
+        <title>Contact Us - PriceTrace</title>
+        <meta name="description" content="Get in touch with us at PriceTrace. Have questions or feedback? Contact us today." />
+        <meta name="keywords" content="contact PriceTrace, customer support, feedback, help, queries" />
+        <meta name="author" content="PriceTrace Team" />
+        <meta property="og:title" content="Contact Us - PriceTrace" />
+        <meta property="og:description" content="Have questions or feedback? Contact PriceTrace today and let us assist you." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.pricetrace.tech/contact-us" />
+        <meta property="og:image" content="/assets/images/seo-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Contact Us - PriceTrace" />
+        <meta name="twitter:description" content="Have questions or feedback? Contact PriceTrace today and let us assist you." />
+        <meta name="twitter:image" content="/assets/images/seo-image.png" />
+      </Head>
 
-        <h1 className="text-4xl font-bold leading-snug text-gray-800">Contact Us</h1>
+      <section className="px-8 md:px-24 py-28 bg-gray-50">
+        <div className="flex flex-col items-center space-y-8 text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold leading-snug text-gray-800">Contact Us</h1>
 
-        <p className="text-gray-600 text-lg">
-          We’d love to hear from you! Whether you have a question, feedback, or just want to say hello, feel free to send us a message.
-        </p>
+          <p className="text-gray-600 text-lg">
+            We’d love to hear from you! Whether you have a question, feedback, or just want to say hello, feel free to send us a message.
+          </p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full flex flex-col space-y-6 mt-8"
-        >
-          <div>
-            <label htmlFor="name" className="block text-lg text-gray-700 mb-2">Your Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-lg text-gray-700 mb-2">Your Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="subject" className="block text-lg text-gray-700 mb-2">Subject</label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter the subject"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="message" className="block text-lg text-gray-700 mb-2">Your Message</label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter your message"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px] bg-primary hover:bg-primary-dark text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          <form
+            onSubmit={handleSubmit}
+            className="w-full flex flex-col space-y-6 mt-8"
           >
-            {isSubmitting ? (
-              <span>Processing...</span>
-            ) : transactionComplete ? (
-              <>
-                <Image
-                  src="/assets/icons/check.svg"
-                  alt="check"
-                  width={22}
-                  height={22}
-                />
-                <span className="text-base">Message Sent</span>
-              </>
-            ) : (
-              <span className="text-base">Send Message</span>
-            )}
-          </button>
-        </form>
-      </div>
-    </section>
+            <div>
+              <label htmlFor="name" className="block text-lg text-gray-700 mb-2">Your Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-lg text-gray-700 mb-2">Your Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="subject" className="block text-lg text-gray-700 mb-2">Subject</label>
+              <input
+                type="text"
+                id="subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter the subject"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-lg text-gray-700 mb-2">Your Message</label>
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                rows={6}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter your message"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn w-fit mx-auto flex items-center justify-center gap-3 min-w-[200px] bg-primary hover:bg-primary-dark text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {isSubmitting ? (
+                <span>Processing...</span>
+              ) : transactionComplete ? (
+                <>
+                  <Image
+                    src="/assets/icons/check.svg"
+                    alt="check"
+                    width={22}
+                    height={22}
+                  />
+                  <span className="text-base">Message Sent</span>
+                </>
+              ) : (
+                <span className="text-base">Send Message</span>
+              )}
+            </button>
+          </form>
+        </div>
+      </section>
+    </>
   );
 };
 

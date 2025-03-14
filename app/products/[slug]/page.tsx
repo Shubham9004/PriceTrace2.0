@@ -270,21 +270,16 @@ const ProductDetails = async ({ params: { slug } }: Props) => {
       </div>
 
       {similarProducts && similarProducts.length > 0 && (
-        <section className="py-14 flex flex-col gap-2 w-full">
-          <h2 className="section-text">Similar Products</h2>
-          <div className="flex flex-wrap gap-10 mt-7 w-full">
-            {similarProducts.map((product: Product) => (
-              <Link
-                key={product._id}
-                href={`/products/${product.slug}`}
-                aria-label={`View ${product.title}`}
-              >
-                <ProductCard product={product} />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+  <section className="py-14 flex flex-col gap-2 w-full">
+    <h2 className="section-text">Similar Products</h2>
+    <div className="flex flex-wrap gap-10 mt-7 w-full">
+      {similarProducts.map((product: Product) => (
+        <ProductCard key={product._id} product={product} />
+      ))}
+    </div>
+  </section>
+)}
+
     </main>
   );
 };
