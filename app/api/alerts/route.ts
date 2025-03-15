@@ -4,6 +4,11 @@ import Product from "@/lib/models/product.model";
 import { sendEmail } from "@/lib/nodemailer";
 import { scrapeAmazonProduct } from "@/lib/scraper";
 
+// ✅ Ensure Vercel doesn't cache or restrict execution
+export const maxDuration = 60; // Allows up to 60s execution time
+export const dynamic = "force-dynamic"; // Ensures always server-side execution
+export const revalidate = 0; // Prevents caching
+
 const API_KEY = process.env.PRICE_TRACE_API_KEY || "";
 
 // ✅ Handle CORS for Preflight Requests
