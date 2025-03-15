@@ -4,15 +4,9 @@ import Product from "@/lib/models/product.model";
 import { sendEmail } from "@/lib/nodemailer";
 import { scrapeAmazonProduct } from "@/lib/scraper";
 
-type User = {
-  email: string;
-  targetPrice?: number;
-  notified?: boolean;
-};
-
-// ✅ Use an environment variable for the API key (store in `.env`)
 const API_KEY = process.env.PRICE_TRACE_API_KEY || "";
 
+// ✅ Handle CORS for Preflight Requests
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
@@ -53,17 +47,20 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Scraping product URL:", productUrl);
+    console.log("🔹 Scraping product URL:", productUrl);
     await connectToDB();
 
+    // ✅ Scrape product data
     const scrapedProduct = await scrapeAmazonProduct(productUrl);
     if (!scrapedProduct) {
-      console.error("Scraping failed for URL:", productUrl);
+      console.error("❌ Scraping failed for URL:", productUrl);
       return NextResponse.json(
         { success: false, error: "Failed to scrape product details" },
         { status: 500 }
       );
     }
+
+    console.log("✅ Scraped Product Data:", scrapedProduct);
 
     let product = await Product.findOne({ url: productUrl });
 
@@ -90,8 +87,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // Update or add the user's target price
-    const userIndex = product.users.findIndex((user: User) => user.email === email);
+    // ✅ Update or add the user's target price
+    const userIndex = product.users.findIndex((user: any) => user.email === email);
     if (userIndex !== -1) {
       product.users[userIndex].targetPrice = targetPrice;
     } else {
@@ -100,7 +97,7 @@ export async function POST(request: Request) {
 
     await product.save();
 
-    // Send a welcome email
+    // ✅ Send Email
     try {
       await sendEmail(
         {
@@ -110,7 +107,7 @@ export async function POST(request: Request) {
         [email]
       );
     } catch (emailError) {
-      console.error("Error sending email:", emailError);
+      console.error("❌ Error sending email:", emailError);
     }
 
     return NextResponse.json(
@@ -121,7 +118,7 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("Error setting price alert:", error);
+    console.error("❌ Error setting price alert:", error);
     return NextResponse.json(
       { success: false, error: "Failed to set price alert" },
       { status: 500 }
